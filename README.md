@@ -1,2 +1,4 @@
 # mydocker
-implementation of personal docker, just for learning.
+### build local
+> go build .
+> ./mydocker run -it /bin/sh

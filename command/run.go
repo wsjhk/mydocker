@@ -8,7 +8,9 @@ import (
 )
 
 func Run(command string, tty bool)  {
-	cmd := exec.Command(command)
+	//cmd := exec.Command(command)
+
+	cmd := exec.Command("/proc/self/exe", "init", command)
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
