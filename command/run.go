@@ -33,7 +33,7 @@ func Run(command string, tty bool, memory string)  {
 	}
 	log.Printf("222 before process pid:%d, memory:%s\n", cmd.Process.Pid, memory)
 
-	subsystems.Set("memory")
+	subsystems.Set(memory)
 	subsystems.Apply(strconv.Itoa(cmd.Process.Pid))
 
 	cmd.Wait()
