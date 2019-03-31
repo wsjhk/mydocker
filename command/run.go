@@ -12,13 +12,10 @@ func Run(command string, tty bool, memory string)  {
 
 	cmd := exec.Command("/proc/self/exe", "init", command)
 
-	log.Printf("000 before process pid:%d, memory:%s\n", cmd.Process.Pid, memory)
-
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 
-	log.Printf("111 before process pid:%d, memory:%s\n", cmd.Process.Pid, memory)
 	if tty {
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
