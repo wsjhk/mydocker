@@ -1,9 +1,11 @@
 package command
 
 import (
+	"github.com/nicktming/mydocker/cgroups/subsystems"
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"syscall"
 )
 
@@ -30,5 +32,9 @@ func Run(command string, tty bool, memory string)  {
 		log.Fatal(err)
 	}
 	log.Printf("222 before process pid:%d, memory:%s\n", cmd.Process.Pid, memory)
+
+	subsystems.Set("memory")
+	subsystems.Apply(strconv.Itoa(cmd.Process.Pid))
+
 	cmd.Wait()
 }
