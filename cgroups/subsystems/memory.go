@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 )
 
@@ -32,6 +33,19 @@ func Apply(pid string) error {
 		return fmt.Errorf("ERROR write pid:%s.\n", pid)
 	} else {
 		log.Printf("err : %v\n", err)
+	}
+	return nil
+}
+
+func Remove() error {
+	absolutePath := ""
+	if absolutePath = FindAbsolutePath("memory"); absolutePath == "" {
+		log.Printf("ERROR: absoutePath is empty!\n")
+		return fmt.Errorf("ERROR: absoutePath is empty!\n")
+	}
+	if err := os.RemoveAll(absolutePath); err != nil {
+		log.Printf("ERROR: remove absolutePath error:%v\n", err)
+		return fmt.Errorf("ERROR: remove absolutePath error:%v\n", err)
 	}
 	return nil
 }

@@ -35,6 +35,7 @@ func Run(command string, tty bool, memory string)  {
 
 	subsystems.Set(memory)
 	subsystems.Apply(strconv.Itoa(cmd.Process.Pid))
+	defer subsystems.Remove()
 
 	cmd.Wait()
 }
