@@ -9,11 +9,16 @@ var RunCommand = cli.Command{
 			Name: "it",
 			Usage: "enable tty",
 		},
+		cli.StringFlag{
+			Name: "m",
+			Usage: "memory usage",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		tty 	:= c.Bool("it")
+		memory  := c.String("m")
 		command := c.Args().Get(0)
-		Run(command, tty)
+		Run(command, tty, memory)
 		return nil
 	},
 }
