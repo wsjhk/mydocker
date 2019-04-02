@@ -8,6 +8,11 @@ import (
 	"path"
 )
 
+type MemorySubsystem struct {
+
+}
+
+/*
 func Set(content string) error {
 	absolutePath := ""
 	if absolutePath = FindAbsolutePath("memory"); absolutePath == "" {
@@ -20,10 +25,29 @@ func Set(content string) error {
 	}
 	return nil
 }
+*/
 
-func Apply(pid string) error {
+
+func (s *MemorySubsystem) Set(res *ResourceConfig) error {
+	if (res.MemoryLimit != "") {
+		content := res.MemoryLimit
+		absolutePath := ""
+		if absolutePath = FindAbsolutePath(s.Name()); absolutePath == "" {
+			log.Printf("ERROR: absoutePath is empty!\n")
+			return fmt.Errorf("ERROR: absoutePath is empty!\n")
+		}
+		if err := ioutil.WriteFile(path.Join(absolutePath, "memory.limit_in_bytes"), []byte(content),0644); err != nil {
+			log.Printf("ERROR write content:%s.\n", content)
+			return fmt.Errorf("ERROR write content:%s.\n", content)
+		}
+	}
+
+	return nil
+}
+
+func (s *MemorySubsystem) Apply(pid string) error {
 	absolutePath := ""
-	if absolutePath = FindAbsolutePath("memory"); absolutePath == "" {
+	if absolutePath = FindAbsolutePath(s.Name()); absolutePath == "" {
 		log.Printf("ERROR: absoutePath is empty!\n")
 		return fmt.Errorf("ERROR: absoutePath is empty!\n")
 	}
@@ -37,9 +61,9 @@ func Apply(pid string) error {
 	return nil
 }
 
-func Remove() error {
+func (s *MemorySubsystem) Remove() error {
 	absolutePath := ""
-	if absolutePath = FindAbsolutePath("memory"); absolutePath == "" {
+	if absolutePath = FindAbsolutePath(s.Name()); absolutePath == "" {
 		log.Printf("ERROR: absoutePath is empty!\n")
 		return fmt.Errorf("ERROR: absoutePath is empty!\n")
 	}
@@ -48,4 +72,8 @@ func Remove() error {
 		return fmt.Errorf("ERROR: remove absolutePath error:%v\n", err)
 	}
 	return nil
+}
+
+func (s *MemorySubsystem) Name() string {
+	return "memory"
 }
