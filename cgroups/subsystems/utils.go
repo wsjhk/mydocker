@@ -2,7 +2,6 @@ package subsystems
 
 import (
 	"bufio"
-	"github.com/nicktming/mydocker/cgroups"
 	"io"
 	"log"
 	"os"
@@ -12,7 +11,7 @@ import (
 func FindAbsolutePath(subsystem string) string {
 	path := FindCgroupMountPoint(subsystem)
 	if path != "" {
-		absolutePath := path + "/" + cgroups.ResourceName
+		absolutePath := path + "/" + ResourceName
 		exist, err := PathExists(absolutePath)
 		if err != nil {
 			log.Printf("PathExists error : %v\n", err)

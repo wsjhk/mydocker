@@ -2,9 +2,7 @@ package cgroups
 
 import "github.com/nicktming/mydocker/cgroups/subsystems"
 
-const (
-	ResourceName = "mydocker"
-)
+
 
 type CgroupManger struct {
 	// 限制的值

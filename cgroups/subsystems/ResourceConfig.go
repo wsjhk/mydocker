@@ -10,3 +10,7 @@ type Subsystem interface {
 	Apply(pid string) error
 	Remove() error
 }
+
+const (
+	ResourceName = "mydocker"
+)
