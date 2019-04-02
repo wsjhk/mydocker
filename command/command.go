@@ -3,7 +3,7 @@ package command
 import (
 	"github.com/nicktming/mydocker/cgroups/subsystems"
 	"github.com/urfave/cli"
-	"github.com/nicktming//mydocker/cgroups"
+	"github.com/nicktming/mydocker/cgroups"
 )
 
 var RunCommand = cli.Command{
