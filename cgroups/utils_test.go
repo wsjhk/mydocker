@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+// go test -v utils_test.go -test.run Test000
+
 func Test000(t *testing.T)  {
 	mountPath := subsystems.FindCgroupMountPoint("memory")
 	log.Printf("mountPath:%s\n", mountPath)
@@ -33,7 +35,7 @@ func Test003(t *testing.T)  {
 	res := subsystems.ResourceConfig{
 		MemoryLimit: memory,
 	}
-	cg := CgroupManger{
+	cg := CroupManger {
 		Resource: &res,
 		SubsystemsIns: make([]subsystems.Subsystem, 1),
 	}
