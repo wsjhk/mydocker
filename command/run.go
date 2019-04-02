@@ -1,13 +1,15 @@
 package command
 
 import (
+	"github.com/nicktming/mydocker/cgroups"
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"syscall"
 )
 
-func Run(command string, tty bool, memory string)  {
+func Run(command string, tty bool, cg cgroups.CroupManger)  {
 	//cmd := exec.Command(command)
 
 	cmd := exec.Command("/proc/self/exe", "init", command)
@@ -29,11 +31,15 @@ func Run(command string, tty bool, memory string)  {
 		log.Printf("Run Start err: %v.\n", err)
 		log.Fatal(err)
 	}
-	log.Printf("222 before process pid:%d, memory:%s\n", cmd.Process.Pid, memory)
+	//log.Printf("222 before process pid:%d, memory:%s\n", cmd.Process.Pid, memory)
 
 	//subsystems.Set(memory)
 	//subsystems.Apply(strconv.Itoa(cmd.Process.Pid))
 	//defer subsystems.Remove()
+
+	cg.Set()
+	defer cg.Destroy()
+	cg.Apply(strconv.Itoa(cmd.Process.Pid))
 
 	cmd.Wait()
 }

@@ -1,6 +1,10 @@
 package command
 
-import "github.com/urfave/cli"
+import (
+	"github.com/nicktming/mydocker/cgroups/subsystems"
+	"github.com/urfave/cli"
+	"github.com/nicktming//mydocker/cgroups"
+)
 
 var RunCommand = cli.Command{
 	Name: "run",
@@ -18,7 +22,19 @@ var RunCommand = cli.Command{
 		tty 	:= c.Bool("it")
 		memory  := c.String("m")
 		command := c.Args().Get(0)
-		Run(command, tty, memory)
+
+		res := subsystems.ResourceConfig{
+			MemoryLimit: memory,
+		}
+		cg := cgroups.CroupManger {
+			Resource: &res,
+			SubsystemsIns: make([]subsystems.Subsystem, 1),
+		}
+		if memory != "" {
+			cg.SubsystemsIns = append(cg.SubsystemsIns, &subsystems.MemorySubsystem{})
+		}
+
+		Run(command, tty, cg)
 		return nil
 	},
 }
