@@ -37,7 +37,7 @@ func Test003(t *testing.T)  {
 	}
 	cg := CroupManger {
 		Resource: &res,
-		SubsystemsIns: make([]subsystems.Subsystem, 1),
+		SubsystemsIns: make([]subsystems.Subsystem, 0),
 	}
 	cg.SubsystemsIns = append(cg.SubsystemsIns, &subsystems.MemorySubsystem{})
 

@@ -1,9 +1,9 @@
 package command
 
 import (
+	"github.com/nicktming/mydocker/cgroups"
 	"github.com/nicktming/mydocker/cgroups/subsystems"
 	"github.com/urfave/cli"
-	"github.com/nicktming/mydocker/cgroups"
 )
 
 var RunCommand = cli.Command{
@@ -28,13 +28,13 @@ var RunCommand = cli.Command{
 		}
 		cg := cgroups.CroupManger {
 			Resource: &res,
-			SubsystemsIns: make([]subsystems.Subsystem, 1),
+			SubsystemsIns: make([]subsystems.Subsystem, 0),
 		}
 		if memory != "" {
 			cg.SubsystemsIns = append(cg.SubsystemsIns, &subsystems.MemorySubsystem{})
 		}
 
-		Run(command, tty, cg)
+		Run(command, tty, &cg)
 		return nil
 	},
 }

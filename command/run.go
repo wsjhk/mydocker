@@ -9,7 +9,7 @@ import (
 	"syscall"
 )
 
-func Run(command string, tty bool, cg cgroups.CroupManger)  {
+func Run(command string, tty bool, cg *cgroups.CroupManger)  {
 	//cmd := exec.Command(command)
 
 	cmd := exec.Command("/proc/self/exe", "init", command)

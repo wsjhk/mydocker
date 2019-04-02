@@ -29,7 +29,7 @@ func Set(content string) error {
 
 
 func (s *MemorySubsystem) Set(res *ResourceConfig) error {
-	if (res.MemoryLimit != "") {
+	if res.MemoryLimit != "" {
 		content := res.MemoryLimit
 		absolutePath := ""
 		if absolutePath = FindAbsolutePath(s.Name()); absolutePath == "" {
