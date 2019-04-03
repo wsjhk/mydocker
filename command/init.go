@@ -1,12 +1,19 @@
 package command
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"syscall"
 )
 
 func Init(command string)  {
+
+	log.Printf("read from commandline:%s\n", command)
+
+	command = readFromPipe()
+
+	log.Printf("read from pipe:%s\n", command)
 
 	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
 	syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), "")
@@ -28,4 +35,14 @@ func Init(command string)  {
 		log.Printf("syscall.Exec err: %v\n", err)
 		log.Fatal(err)
 	}
+}
+
+func readFromPipe() string {
+	reader := os.NewFile(uintptr(3), "pipe")
+	command, err := ioutil.ReadAll(reader)
+	if err != nil {
+		log.Printf("reader.Read(buf) error:%v\n", err)
+		return ""
+	}
+	return string(command)
 }
