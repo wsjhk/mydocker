@@ -27,6 +27,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger)  {
 	}
 
 	cmd.ExtraFiles = []*os.File{reader}
+	sendInitCommand(command, writer)
 
 	if tty {
 		cmd.Stderr = os.Stderr
@@ -47,7 +48,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger)  {
 	//subsystems.Apply(strconv.Itoa(cmd.Process.Pid))
 	//defer subsystems.Remove()
 
-	sendInitCommand(command, writer)
+//	sendInitCommand(command, writer)
 
 	cg.Set()
 	defer cg.Destroy()
