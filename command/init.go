@@ -63,10 +63,10 @@ func readFromPipe() string {
 func setUpMount() {
 	pwd, err := os.Getwd()
 	if err != nil {
-		log.Errorf("Get current location error %v", err)
+		log.Printf("Get current location error %v\n", err)
 		return
 	}
-	log.Infof("Current location is %s", pwd)
+	log.Printf("Current location is %s\n", pwd)
 	pivotRoot(pwd)
 
 	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
