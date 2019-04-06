@@ -1,0 +1,57 @@
+
+
+@startuml
+title 实现容器根目录
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant RunCommand
+participant Run
+participant InitCommand
+box "设置根节点" #B0C4DE
+participant Init
+participant pivotRoot
+end box
+
+
+
+user -> mydocker : 1. mydocker run -it /bin/sh
+activate mydocker
+mydocker -> RunCommand: 2. 解析参数
+activate RunCommand
+RunCommand -> Run: 3. 创建namespace隔离容器进程
+activate Run
+
+Run --> RunCommand: 4. 返回配置好隔离参数\n以及向管道中写入command\n后关闭管道写端
+deactivate Run
+deactivate RunCommand
+RunCommand --> mydocker: 5. 返回容器进程
+deactivate mydocker
+mydocker -> mydocker: 8. 容器内进程调用自己\n/proc/self/exe init
+mydocker -> InitCommand: 9. 解析参数
+activate InitCommand
+InitCommand -> Init: 10. 初始化容器,挂载proc文件\n读管道去获得用户指定程序并运行
+activate Init
+
+Init -> pivotRoot: 11. 将当前目录设置为根目录
+activate pivotRoot
+pivotRoot --> Init: 12. 返回设置结果
+deactivate pivotRoot
+Init --> InitCommand: 13. 创建完成,容器开始运行
+deactivate Init
+InitCommand --> user: 14. 创建完成,容器开始运行
+deactivate InitCommand
+
+@enduml

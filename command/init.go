@@ -39,21 +39,6 @@ func readFromPipe() string {
 	return string(command)
 }
 
-func setUpMount() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Printf("Get current location error %v\n", err)
-		return
-	}
-	log.Printf("Current location is %s\n", pwd)
-	pivotRoot(pwd)
-
-	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
-	syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), "")
-
-	syscall.Mount("tmpfs", "/dev", "tmpfs", syscall.MS_NOSUID|syscall.MS_STRICTATIME, "mode=755")
-}
-
 func pivotRoot(root string) error {
 	if err := syscall.Mount(root, root, "bind", syscall.MS_BIND|syscall.MS_REC, ""); err != nil {
 		return fmt.Errorf("Mount rootfs to itself error: %v", err)
