@@ -56,5 +56,5 @@ func readFromPipe() string {
 }
 
 func pivotRoot(root string) error {
-
+	return nil
 }
