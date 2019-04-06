@@ -17,8 +17,8 @@ func Init(command string)  {
 
 	log.Printf("read from pipe:%s\n", command)
 
-	//defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
-	//syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), "")
+	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
+	syscall.Mount("proc", "/proc", "proc", uintptr(defaultMountFlags), "")
 
 	/*
 	cmd := exec.Command(command)
@@ -31,7 +31,7 @@ func Init(command string)  {
 		log.Printf("Init Run() function err : %v\n", err)
 		log.Fatal(err)
 	}
-
+	*/
 
 	pwd, err := os.Getwd()
 	if err != nil {
@@ -39,9 +39,9 @@ func Init(command string)  {
 		return
 	}
 	log.Printf("current path: %s.\n", pwd)
-	*/
+	pivotRoot(pwd)
 
-	setUpMount()
+	//setUpMount()
 
 
 	if err := syscall.Exec(command, []string{command}, os.Environ()); err != nil {
