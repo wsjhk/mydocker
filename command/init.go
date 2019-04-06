@@ -11,11 +11,11 @@ import (
 
 func Init(command string)  {
 
-	log.Printf("read from commandline:%s\n", command)
+	//log.Printf("read from commandline:%s\n", command)
 
 	command = readFromPipe()
 
-	log.Printf("read from pipe:%s\n", command)
+	//log.Printf("read from pipe:%s\n", command)
 
 	pwd, err := os.Getwd()
 	if err != nil {
