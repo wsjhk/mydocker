@@ -50,6 +50,8 @@ func Run(command string, tty bool, cg *cgroups.CroupManger)  {
 
 //	sendInitCommand(command, writer)
 
+	cmd.Dir = "/root"
+
 	cg.Set()
 	defer cg.Destroy()
 	cg.Apply(strconv.Itoa(cmd.Process.Pid))
