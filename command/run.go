@@ -25,13 +25,8 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
-	log.Printf("rootPath:%s\n", rootPath)
-	cmd.Dir = rootPath
-	if rootPath == "" {
-		log.Printf("set cmd.Dir by default: /root/busybox\n")
-		cmd.Dir = "/root/busybox"
-	}
 
+	cmd.Dir = getRootPath(rootPath)
 	cmd.ExtraFiles = []*os.File{reader}
 	sendInitCommand(command, writer)
 
@@ -72,4 +67,45 @@ func sendInitCommand(command string, writer *os.File)  {
 		return
 	}
 	writer.Close()
+}
+
+
+func getRootPath(rootPath string) string {
+	log.Printf("rootPath:%s\n", rootPath)
+	defaultPath := "/root/busybox"
+	if rootPath == "" {
+		log.Printf("rootPath is empaty, set cmd.Dir by default: /root/busybox\n")
+		return defaultPath
+	}
+	imageTar := rootPath + "/busybox.tar"
+	exist, _ := PathExists(imageTar)
+	if !exist {
+		log.Printf("%s does not exist, set cmd.Dir by default: /root/busybox\n", imageTar)
+		return defaultPath
+	}
+	imagePath := rootPath + "/busybox"
+	exist, _ = PathExists(imageTar)
+	if exist {
+		os.RemoveAll(imagePath)
+	}
+	if err := os.Mkdir(imagePath, 0777); err != nil {
+		log.Printf("mkdir %s err:%v, set cmd.Dir by default: /root/busybox\n", imagePath, err)
+		return defaultPath
+	}
+	if _, err := exec.Command("tar", "-xvf", imageTar, "-C", imagePath).CombinedOutput(); err != nil {
+		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: /root/busybox\n", imageTar, imagePath, err)
+		return defaultPath
+	}
+	return imagePath
+}
+
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
