@@ -31,6 +31,14 @@ func Init(command string)  {
 	}
 	*/
 
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Printf("ERROR: get pwd error!\n")
+		return
+	}
+	log.Printf("current path: %s.\n", pwd)
+
+
 	if err := syscall.Exec(command, []string{command}, os.Environ()); err != nil {
 		log.Printf("syscall.Exec err: %v\n", err)
 		log.Fatal(err)
@@ -45,4 +53,8 @@ func readFromPipe() string {
 		return ""
 	}
 	return string(command)
+}
+
+func pivotRoot(root string) error {
+
 }
