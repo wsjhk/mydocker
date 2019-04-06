@@ -26,7 +26,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger)  {
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 	log.Printf("cmd.Dir:%s\n", "/root")
-	cmd.Dir = "/root"
+	cmd.Dir = "/root/busybox"
 	cmd.ExtraFiles = []*os.File{reader}
 	sendInitCommand(command, writer)
 
