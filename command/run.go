@@ -39,7 +39,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath, volume str
 	if err := NewWorkDir(newRootPath, volume); err == nil {
 		cmd.Dir = newRootPath + "/mnt"
 	}
-	defer ClearWorkDir(newRootPath)
+	defer ClearWorkDir(newRootPath, volume)
 
 
 	cmd.ExtraFiles = []*os.File{reader}
