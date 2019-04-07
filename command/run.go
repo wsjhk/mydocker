@@ -126,16 +126,16 @@ func PathExists(path string) (bool, error) {
 }
 
 func ClearWorkDir(rootPath, volume string)  {
-	ClearMountPoint(rootPath)
 	ClearVolume(rootPath, volume)
+	ClearMountPoint(rootPath)
 	ClearWriterLayer(rootPath)
 }
 
 func ClearVolume(rootPath, volume string)  {
 	if volume != "" {
-		writerLayer   := rootPath + "/writerLayer"
+		containerMntPath   := rootPath + "/mnt"
 		mountPath 	  := strings.Split(volume, ":")[1]
-		containerPath := writerLayer + mountPath
+		containerPath := containerMntPath + mountPath
 		if _, err := exec.Command("umount", "-f", containerPath).CombinedOutput(); err != nil {
 			log.Printf("mount -f %s, err:%v\n", containerPath, err)
 		}
