@@ -36,7 +36,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 	if err := NewWorkDir(newRootPath); err == nil {
 		cmd.Dir = newRootPath + "/mnt"
 	}
-	defer ClearMountPoint(newRootPath)
+	defer ClearWorkDir(newRootPath)
 
 
 	cmd.ExtraFiles = []*os.File{reader}
@@ -86,13 +86,13 @@ func getRootPath(rootPath string) string {
 	log.Printf("rootPath:%s\n", rootPath)
 	defaultPath := DEFAULTPATH
 	if rootPath == "" {
-		log.Printf("rootPath is empaty, set cmd.Dir by default: /%s/busybox\n", defaultPath)
+		log.Printf("rootPath is empaty, set cmd.Dir by default: %s/busybox\n", defaultPath)
 		rootPath = defaultPath
 	}
 	imageTar := rootPath + "/busybox.tar"
 	exist, _ := PathExists(imageTar)
 	if !exist {
-		log.Printf("%s does not exist, set cmd.Dir by default: /%s/busybox\n", defaultPath)
+		log.Printf("%s does not exist, set cmd.Dir by default: %s/busybox\n", imageTar, defaultPath)
 		return defaultPath
 	}
 	imagePath := rootPath + "/busybox"
@@ -101,11 +101,11 @@ func getRootPath(rootPath string) string {
 		os.RemoveAll(imagePath)
 	}
 	if err := os.Mkdir(imagePath, 0777); err != nil {
-		log.Printf("mkdir %s err:%v, set cmd.Dir by default: /%s/busybox\n", imagePath, err, defaultPath)
+		log.Printf("mkdir %s err:%v, set cmd.Dir by default: %s/busybox\n", imagePath, err, defaultPath)
 		return defaultPath
 	}
 	if _, err := exec.Command("tar", "-xvf", imageTar, "-C", imagePath).CombinedOutput(); err != nil {
-		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: /%s/busybox\n", imageTar, imagePath, err, defaultPath)
+		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: %s/busybox\n", imageTar, imagePath, err, defaultPath)
 		return defaultPath
 	}
 	return rootPath
@@ -123,9 +123,18 @@ func PathExists(path string) (bool, error) {
 }
 
 func ClearWorkDir(rootPath string)  {
+	ClearImageFolder(rootPath)
 	ClearMountPoint(rootPath)
 	ClearWriterLayer(rootPath)
 }
+
+func ClearImageFolder(rootPath string) {
+	imageFolder := rootPath + "/busybox"
+	if err := os.RemoveAll(imageFolder); err != nil {
+		log.Printf("remove %s, err:%v\n", imageFolder, err)
+	}
+}
+
 
 func ClearMountPoint(rootPath string)  {
 	mnt := rootPath + "/mnt"
