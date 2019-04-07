@@ -180,14 +180,14 @@ func NewWorkDir(rootPath, volume string) error {
 
 func CreateVolume(rootPath, volume string) error {
 	if volume != "" {
-		writerLayer := rootPath + "/writerLayer"
+		containerMntPath := rootPath + "/mnt"
 		hostPath 	:= strings.Split(volume, ":")[0]
 		if err := os.Mkdir(hostPath, 0777); err != nil {
 			log.Printf("mkdir %s err:%v\n", hostPath, err)
 			return fmt.Errorf("mkdir %s err:%v\n", hostPath, err)
 		}
 		mountPath 	:= strings.Split(volume, ":")[1]
-		containerPath := writerLayer + mountPath
+		containerPath := containerMntPath + mountPath
 		if err := os.Mkdir(containerPath, 0777); err != nil {
 			log.Printf("mkdir %s err:%v\n", containerPath, err)
 			return fmt.Errorf("mkdir %s err:%v\n", containerPath, err)
