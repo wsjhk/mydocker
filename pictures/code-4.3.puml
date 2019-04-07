@@ -1,0 +1,75 @@
+
+
+@startuml
+title 实现容器根目录
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant RunCommand
+
+participant Run
+box "设置根节点" #B0C4DE
+participant NewWorkDir
+participant CreateVolume
+
+participant ClearWorkDir
+participant ClearMountPoint
+end box
+participant InitCommand
+participant Init
+
+
+user -> mydocker : 1. mydocker run -it -v /nicktming/volume01:/containerVolume01 \n-v /nicktming/volume02:/containerVolume02 /bin/sh
+activate mydocker
+mydocker -> RunCommand: 2. 解析参数
+activate RunCommand
+RunCommand -> Run: 3. 创建namespace隔离容器进程
+activate Run
+
+Run -> NewWorkDir: 4. 创建Init程序工作目录并且\n挂载容器层和镜像层
+activate NewWorkDir
+NewWorkDir -> CreateVolume: 6. 挂载用户目录
+activate CreateVolume
+CreateVolume --> NewWorkDir: 7. 返回是否成功
+deactivate CreateVolume
+NewWorkDir --> Run: 8. 返回目录
+
+deactivate NewWorkDir
+
+ClearWorkDir -> ClearMountPoint: 9. 卸载用户目录mount
+activate ClearMountPoint
+ClearMountPoint --> ClearWorkDir: 10. 返回结果
+deactivate ClearMountPoint
+
+ClearWorkDir --> user: 11. 容器结束时清理工作目录
+
+
+Run --> RunCommand: 12. 返回配置好隔离参数\n以及向管道中写入command\n后关闭管道写端
+deactivate Run
+deactivate RunCommand
+RunCommand --> mydocker: 13. 返回容器进程
+deactivate mydocker
+mydocker -> mydocker: 14. 容器内进程调用自己\n/proc/self/exe init
+mydocker -> InitCommand: 15. 解析参数
+activate InitCommand
+InitCommand -> Init: 16. 初始化容器,挂载proc文件\n读管道去获得用户指定程序并运行
+activate Init
+
+Init --> InitCommand: 17. 创建完成,容器开始运行
+deactivate Init
+InitCommand --> user: 18. 创建完成,容器开始运行
+deactivate InitCommand
+
+@enduml

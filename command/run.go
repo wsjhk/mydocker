@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"syscall"
 )
 
@@ -14,7 +15,7 @@ const (
 	DEFAULTPATH = "/nicktming"
 )
 
-func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
+func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string)  {
 	//cmd := exec.Command(command)
 
 	reader, writer, err := os.Pipe()
@@ -31,12 +32,14 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 
+	log.Printf("volume:%s\n", volumes)
+
 	newRootPath := getRootPath(rootPath)
 	cmd.Dir = newRootPath + "/busybox"
-	if err := NewWorkDir(newRootPath); err == nil {
+	if err := NewWorkDir(newRootPath, volumes); err == nil {
 		cmd.Dir = newRootPath + "/mnt"
 	}
-	defer ClearWorkDir(newRootPath)
+	defer ClearWorkDir(newRootPath, volumes)
 
 
 	cmd.ExtraFiles = []*os.File{reader}
@@ -86,13 +89,13 @@ func getRootPath(rootPath string) string {
 	log.Printf("rootPath:%s\n", rootPath)
 	defaultPath := DEFAULTPATH
 	if rootPath == "" {
-		log.Printf("rootPath is empaty, set cmd.Dir by default: %s/busybox\n", defaultPath)
+		log.Printf("rootPath is empaty, set cmd.Dir by default: %s/mnt\n", defaultPath)
 		rootPath = defaultPath
 	}
 	imageTar := rootPath + "/busybox.tar"
 	exist, _ := PathExists(imageTar)
 	if !exist {
-		log.Printf("%s does not exist, set cmd.Dir by default: %s/busybox\n", imageTar, defaultPath)
+		log.Printf("%s does not exist, set cmd.Dir by default: %s/mnt\n", imageTar, defaultPath)
 		return defaultPath
 	}
 	imagePath := rootPath + "/busybox"
@@ -101,11 +104,11 @@ func getRootPath(rootPath string) string {
 		os.RemoveAll(imagePath)
 	}
 	if err := os.Mkdir(imagePath, 0777); err != nil {
-		log.Printf("mkdir %s err:%v, set cmd.Dir by default: %s/busybox\n", imagePath, err, defaultPath)
+		log.Printf("mkdir %s err:%v, set cmd.Dir by default: %s/mnt\n", imagePath, err, defaultPath)
 		return defaultPath
 	}
 	if _, err := exec.Command("tar", "-xvf", imageTar, "-C", imagePath).CombinedOutput(); err != nil {
-		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: %s/busybox\n", imageTar, imagePath, err, defaultPath)
+		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: %s/mnt\n", imageTar, imagePath, err, defaultPath)
 		return defaultPath
 	}
 	return rootPath
@@ -122,9 +125,26 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-func ClearWorkDir(rootPath string)  {
+func ClearWorkDir(rootPath string, volumes []string)  {
+	for _, volume := range volumes {
+		ClearVolume(rootPath, volume)
+	}
 	ClearMountPoint(rootPath)
 	ClearWriterLayer(rootPath)
+}
+
+func ClearVolume(rootPath, volume string)  {
+	if volume != "" {
+		containerMntPath   := rootPath + "/mnt"
+		mountPath 	  := strings.Split(volume, ":")[1]
+		containerPath := containerMntPath + mountPath
+		if _, err := exec.Command("umount", "-f", containerPath).CombinedOutput(); err != nil {
+			log.Printf("mount -f %s, err:%v\n", containerPath, err)
+		}
+		if err := os.RemoveAll(containerPath); err != nil {
+			log.Printf("remove %s, err:%v\n", containerPath, err)
+		}
+	}
 }
 
 func ClearMountPoint(rootPath string)  {
@@ -144,15 +164,46 @@ func ClearWriterLayer(rootPath string) {
 	}
 }
 
-func NewWorkDir(rootPath string) error {
+func NewWorkDir(rootPath string, volumes []string) error {
 	if err := CreateContainerLayer(rootPath); err != nil {
 		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
 	}
 	if err := CreateMntPoint(rootPath); err != nil {
-		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+		return fmt.Errorf("CreateMntPoint(%s) error: %v.\n", rootPath, err)
 	}
 	if err := SetMountPoint(rootPath); err != nil {
-		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+		return fmt.Errorf("SetMountPoint(%s) error: %v.\n", rootPath, err)
+	}
+	for _, volume := range volumes {
+		if err := CreateVolume(rootPath, volume); err != nil {
+			return fmt.Errorf("CreateVolume(%s, %s) error: %v.\n", rootPath, volume, err)
+		}
+	}
+	return nil
+}
+
+func CreateVolume(rootPath, volume string) error {
+	if volume != "" {
+		containerMntPath := rootPath + "/mnt"
+		hostPath 	:= strings.Split(volume, ":")[0]
+		exist, _ := PathExists(hostPath)
+		if !exist {
+			if err := os.Mkdir(hostPath, 0777); err != nil {
+				log.Printf("mkdir %s err:%v\n", hostPath, err)
+				return fmt.Errorf("mkdir %s err:%v\n", hostPath, err)
+			}
+		}
+		mountPath 	:= strings.Split(volume, ":")[1]
+		containerPath := containerMntPath + mountPath
+		if err := os.Mkdir(containerPath, 0777); err != nil {
+			log.Printf("mkdir %s err:%v\n", containerPath, err)
+			return fmt.Errorf("mkdir %s err:%v\n", containerPath, err)
+		}
+		dirs := "dirs=" + hostPath
+		if _, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", containerPath).CombinedOutput(); err != nil {
+			log.Printf("mount -t aufs -o %s none %s, err:%v\n", dirs, containerPath, err)
+			return fmt.Errorf("mount -t aufs -o %s none %s, err:%v\n", dirs, containerPath, err)
+		}
 	}
 	return nil
 }
