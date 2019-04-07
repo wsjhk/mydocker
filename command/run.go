@@ -1,12 +1,17 @@
 package command
 
 import (
+	"fmt"
 	"github.com/nicktming/mydocker/cgroups"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
 	"syscall"
+)
+
+const (
+	DEFAULTPATH = "/nicktming"
 )
 
 func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
@@ -25,12 +30,14 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
-	log.Printf("rootPath:%s\n", rootPath)
-	cmd.Dir = rootPath
-	if rootPath == "" {
-		log.Printf("set cmd.Dir by default: /root/busybox\n")
-		cmd.Dir = "/root/busybox"
+
+	newRootPath := getRootPath(rootPath)
+	cmd.Dir = newRootPath + "/busybox"
+	if err := NewWorkDir(newRootPath); err == nil {
+		cmd.Dir = newRootPath + "/mnt"
 	}
+	defer ClearWorkDir(newRootPath)
+
 
 	cmd.ExtraFiles = []*os.File{reader}
 	sendInitCommand(command, writer)
@@ -72,4 +79,108 @@ func sendInitCommand(command string, writer *os.File)  {
 		return
 	}
 	writer.Close()
+}
+
+
+func getRootPath(rootPath string) string {
+	log.Printf("rootPath:%s\n", rootPath)
+	defaultPath := DEFAULTPATH
+	if rootPath == "" {
+		log.Printf("rootPath is empaty, set cmd.Dir by default: %s/busybox\n", defaultPath)
+		rootPath = defaultPath
+	}
+	imageTar := rootPath + "/busybox.tar"
+	exist, _ := PathExists(imageTar)
+	if !exist {
+		log.Printf("%s does not exist, set cmd.Dir by default: %s/busybox\n", imageTar, defaultPath)
+		return defaultPath
+	}
+	imagePath := rootPath + "/busybox"
+	exist, _ = PathExists(imageTar)
+	if exist {
+		os.RemoveAll(imagePath)
+	}
+	if err := os.Mkdir(imagePath, 0777); err != nil {
+		log.Printf("mkdir %s err:%v, set cmd.Dir by default: %s/busybox\n", imagePath, err, defaultPath)
+		return defaultPath
+	}
+	if _, err := exec.Command("tar", "-xvf", imageTar, "-C", imagePath).CombinedOutput(); err != nil {
+		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: %s/busybox\n", imageTar, imagePath, err, defaultPath)
+		return defaultPath
+	}
+	return rootPath
+}
+
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
+func ClearWorkDir(rootPath string)  {
+	ClearMountPoint(rootPath)
+	ClearWriterLayer(rootPath)
+}
+
+func ClearMountPoint(rootPath string)  {
+	mnt := rootPath + "/mnt"
+	if _, err := exec.Command("umount", "-f", mnt).CombinedOutput(); err != nil {
+		log.Printf("mount -f %s, err:%v\n", mnt, err)
+	}
+	if err := os.RemoveAll(mnt); err != nil {
+		log.Printf("remove %s, err:%v\n", mnt, err)
+	}
+}
+
+func ClearWriterLayer(rootPath string) {
+	writerLayer := rootPath + "/writerLayer"
+	if err := os.RemoveAll(writerLayer); err != nil {
+		log.Printf("remove %s, err:%v\n", writerLayer, err)
+	}
+}
+
+func NewWorkDir(rootPath string) error {
+	if err := CreateContainerLayer(rootPath); err != nil {
+		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+	}
+	if err := CreateMntPoint(rootPath); err != nil {
+		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+	}
+	if err := SetMountPoint(rootPath); err != nil {
+		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+	}
+	return nil
+}
+
+func CreateContainerLayer(rootPath string) error {
+	writerLayer := rootPath + "/writerLayer"
+	if err := os.Mkdir(writerLayer, 0777); err != nil {
+		log.Printf("mkdir %s err:%v\n", writerLayer, err)
+		return fmt.Errorf("mkdir %s err:%v\n", writerLayer, err)
+	}
+	return nil 
+}
+
+func CreateMntPoint(rootPath string) error {
+	mnt := rootPath + "/mnt"
+	if err := os.Mkdir(mnt, 0777); err != nil {
+		log.Printf("mkdir %s err:%v\n", mnt, err)
+		return fmt.Errorf("mkdir %s err:%v\n", mnt, err)
+	}
+	return nil
+}
+
+func SetMountPoint(rootPath string) error {
+	dirs := "dirs=" + rootPath + "/writerLayer:" + rootPath + "/busybox"
+	mnt := rootPath + "/mnt"
+	if _, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mnt).CombinedOutput(); err != nil {
+		log.Printf("mount -t aufs -o %s none %s, err:%v\n", dirs, mnt, err)
+		return fmt.Errorf("mount -t aufs -o %s none %s, err:%v\n", dirs, mnt, err)
+	}
+	return nil
 }
