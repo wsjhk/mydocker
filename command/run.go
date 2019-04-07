@@ -123,18 +123,9 @@ func PathExists(path string) (bool, error) {
 }
 
 func ClearWorkDir(rootPath string)  {
-	ClearImageFolder(rootPath)
 	ClearMountPoint(rootPath)
 	ClearWriterLayer(rootPath)
 }
-
-func ClearImageFolder(rootPath string) {
-	imageFolder := rootPath + "/busybox"
-	if err := os.RemoveAll(imageFolder); err != nil {
-		log.Printf("remove %s, err:%v\n", imageFolder, err)
-	}
-}
-
 
 func ClearMountPoint(rootPath string)  {
 	mnt := rootPath + "/mnt"
