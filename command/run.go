@@ -182,9 +182,12 @@ func CreateVolume(rootPath, volume string) error {
 	if volume != "" {
 		containerMntPath := rootPath + "/mnt"
 		hostPath 	:= strings.Split(volume, ":")[0]
-		if err := os.Mkdir(hostPath, 0777); err != nil {
-			log.Printf("mkdir %s err:%v\n", hostPath, err)
-			return fmt.Errorf("mkdir %s err:%v\n", hostPath, err)
+		exist, _ := PathExists(hostPath)
+		if !exist {
+			if err := os.Mkdir(hostPath, 0777); err != nil {
+				log.Printf("mkdir %s err:%v\n", hostPath, err)
+				return fmt.Errorf("mkdir %s err:%v\n", hostPath, err)
+			}
 		}
 		mountPath 	:= strings.Split(volume, ":")[1]
 		containerPath := containerMntPath + mountPath
