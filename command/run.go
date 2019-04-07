@@ -15,7 +15,7 @@ const (
 	DEFAULTPATH = "/nicktming"
 )
 
-func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath, volume string)  {
+func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string)  {
 	//cmd := exec.Command(command)
 
 	reader, writer, err := os.Pipe()
@@ -32,14 +32,14 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath, volume str
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 
-	log.Printf("volume:%s\n", volume)
+	log.Printf("volume:%s\n", volumes)
 
 	newRootPath := getRootPath(rootPath)
 	cmd.Dir = newRootPath + "/busybox"
-	if err := NewWorkDir(newRootPath, volume); err == nil {
+	if err := NewWorkDir(newRootPath, volumes); err == nil {
 		cmd.Dir = newRootPath + "/mnt"
 	}
-	defer ClearWorkDir(newRootPath, volume)
+	defer ClearWorkDir(newRootPath, volumes)
 
 
 	cmd.ExtraFiles = []*os.File{reader}
@@ -125,8 +125,10 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-func ClearWorkDir(rootPath, volume string)  {
-	ClearVolume(rootPath, volume)
+func ClearWorkDir(rootPath string, volumes []string)  {
+	for _, volume := range volumes {
+		ClearVolume(rootPath, volume)
+	}
 	ClearMountPoint(rootPath)
 	ClearWriterLayer(rootPath)
 }
@@ -162,7 +164,7 @@ func ClearWriterLayer(rootPath string) {
 	}
 }
 
-func NewWorkDir(rootPath, volume string) error {
+func NewWorkDir(rootPath string, volumes []string) error {
 	if err := CreateContainerLayer(rootPath); err != nil {
 		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
 	}
@@ -172,8 +174,10 @@ func NewWorkDir(rootPath, volume string) error {
 	if err := SetMountPoint(rootPath); err != nil {
 		return fmt.Errorf("SetMountPoint(%s) error: %v.\n", rootPath, err)
 	}
-	if err := CreateVolume(rootPath, volume); err != nil {
-		return fmt.Errorf("CreateVolume(%s, %s) error: %v.\n", rootPath, volume, err)
+	for _, volume := range volumes {
+		if err := CreateVolume(rootPath, volume); err != nil {
+			return fmt.Errorf("CreateVolume(%s, %s) error: %v.\n", rootPath, volume, err)
+		}
 	}
 	return nil
 }
