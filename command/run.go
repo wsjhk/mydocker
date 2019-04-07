@@ -1,6 +1,7 @@
 package command
 
 import (
+	"fmt"
 	"github.com/nicktming/mydocker/cgroups"
 	"log"
 	"os"
@@ -26,7 +27,12 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 
-	cmd.Dir = getRootPath(rootPath)
+	newRootPath := getRootPath(rootPath)
+	cmd.Dir = newRootPath + "/busybox"
+	if err := NewWorkDir(newRootPath); err != nil {
+		cmd.Dir = newRootPath + "/mnt"
+	}
+
 	cmd.ExtraFiles = []*os.File{reader}
 	sendInitCommand(command, writer)
 
@@ -72,7 +78,7 @@ func sendInitCommand(command string, writer *os.File)  {
 
 func getRootPath(rootPath string) string {
 	log.Printf("rootPath:%s\n", rootPath)
-	defaultPath := "/root/busybox"
+	defaultPath := "/root"
 	if rootPath == "" {
 		log.Printf("rootPath is empaty, set cmd.Dir by default: /root/busybox\n")
 		return defaultPath
@@ -96,7 +102,7 @@ func getRootPath(rootPath string) string {
 		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: /root/busybox\n", imageTar, imagePath, err)
 		return defaultPath
 	}
-	return imagePath
+	return rootPath
 }
 
 func PathExists(path string) (bool, error) {
@@ -108,4 +114,45 @@ func PathExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func NewWorkDir(rootPath string) error {
+	if err := CreateContainerLayer(rootPath); err != nil {
+		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+	}
+	if err := CreateMntPoint(rootPath); err != nil {
+		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+	}
+	if err := SetMountPoint(rootPath); err != nil {
+		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
+	}
+	return nil
+}
+
+func CreateContainerLayer(rootPath string) error {
+	writerLayer := rootPath + "/writerLayer"
+	if err := os.Mkdir(writerLayer, 0777); err != nil {
+		log.Printf("mkdir %s err:%v\n", writerLayer, err)
+		return fmt.Errorf("mkdir %s err:%v\n", writerLayer, err)
+	}
+	return nil 
+}
+
+func CreateMntPoint(rootPath string) error {
+	mnt := rootPath + "/mnt"
+	if err := os.Mkdir(mnt, 0777); err != nil {
+		log.Printf("mkdir %s err:%v\n", mnt, err)
+		return fmt.Errorf("mkdir %s err:%v\n", mnt, err)
+	}
+	return nil
+}
+
+func SetMountPoint(rootPath string) error {
+	dirs := "dirs=" + rootPath + "/writerLayer:" + rootPath + "/busybox"
+	mnt := rootPath + "/mnt"
+	if _, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mnt).CombinedOutput(); err != nil {
+		log.Printf("mount -t aufs -o %s none %s, err:%v\n", dirs, mnt, err)
+		return fmt.Errorf("mount -t aufs -o %s none %s, err:%v\n", dirs, mnt, err)
+	}
+	return nil
 }
