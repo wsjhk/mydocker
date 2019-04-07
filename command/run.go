@@ -33,7 +33,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 
 	newRootPath := getRootPath(rootPath)
 	cmd.Dir = newRootPath + "/busybox"
-	if err := NewWorkDir(newRootPath); err != nil {
+	if err := NewWorkDir(newRootPath); err == nil {
 		cmd.Dir = newRootPath + "/mnt"
 	}
 
