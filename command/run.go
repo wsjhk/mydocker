@@ -10,6 +10,10 @@ import (
 	"syscall"
 )
 
+const (
+	DEFAULTPATH = "/nicktming"
+)
+
 func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 	//cmd := exec.Command(command)
 
@@ -78,7 +82,7 @@ func sendInitCommand(command string, writer *os.File)  {
 
 func getRootPath(rootPath string) string {
 	log.Printf("rootPath:%s\n", rootPath)
-	defaultPath := "/root"
+	defaultPath := DEFAULTPATH
 	if rootPath == "" {
 		log.Printf("rootPath is empaty, set cmd.Dir by default: /root/busybox\n")
 		return defaultPath
