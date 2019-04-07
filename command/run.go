@@ -36,6 +36,8 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string)  {
 	if err := NewWorkDir(newRootPath); err == nil {
 		cmd.Dir = newRootPath + "/mnt"
 	}
+	defer ClearMountPoint(newRootPath)
+
 
 	cmd.ExtraFiles = []*os.File{reader}
 	sendInitCommand(command, writer)
@@ -118,6 +120,28 @@ func PathExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func ClearWorkDir(rootPath string)  {
+	ClearMountPoint(rootPath)
+	ClearWriterLayer(rootPath)
+}
+
+func ClearMountPoint(rootPath string)  {
+	mnt := rootPath + "/mnt"
+	if _, err := exec.Command("umount", "-f", mnt).CombinedOutput(); err != nil {
+		log.Printf("mount -f %s, err:%v\n", mnt, err)
+	}
+	if err := os.RemoveAll(mnt); err != nil {
+		log.Printf("remove %s, err:%v\n", mnt, err)
+	}
+}
+
+func ClearWriterLayer(rootPath string) {
+	writerLayer := rootPath + "/writerLayer"
+	if err := os.RemoveAll(writerLayer); err != nil {
+		log.Printf("remove %s, err:%v\n", writerLayer, err)
+	}
 }
 
 func NewWorkDir(rootPath string) error {
