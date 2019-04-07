@@ -70,3 +70,12 @@ var InitCommand = cli.Command{
 		return nil
 	},
 }
+
+var CommitCommand = cli.Command{
+	Name: "commit",
+	Action: func(c *cli.Context) error {
+		imageName := c.Args().Get(0)
+		Commit(imageName)
+		return nil
+	},
+}
