@@ -58,21 +58,15 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 		log.Printf("Run Start err: %v.\n", err)
 		log.Fatal(err)
 	}
-	//log.Printf("222 before process pid:%d, memory:%s\n", cmd.Process.Pid, memory)
-
-	//subsystems.Set(memory)
-	//subsystems.Apply(strconv.Itoa(cmd.Process.Pid))
-	//defer subsystems.Remove()
-
-//	sendInitCommand(command, writer)
-
-//	cmd.Dir = "/root"
 
 	cg.Set()
 	defer cg.Destroy()
 	cg.Apply(strconv.Itoa(cmd.Process.Pid))
 
-	cmd.Wait()
+	// false 表明父进程(Run程序)无须等待子进程(Init程序,Init进程后续会被用户程序覆盖)
+	if tty {
+		cmd.Wait()
+	}
 }
 
 func sendInitCommand(command string, writer *os.File)  {
