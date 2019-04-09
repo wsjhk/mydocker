@@ -25,6 +25,10 @@ var RunCommand = cli.Command{
 			Name: "v",
 			Usage: "enable volume",
 		},
+		cli.BoolFlag{
+			Name: "d",
+			Usage: "enable detach",
+		},
 		/*
 		cli.StringFlag{
 			Name: "v",
@@ -37,7 +41,8 @@ var RunCommand = cli.Command{
 		memory    := c.String("m")
 		rootPath  := c.String("r")
 		//volume    := c.String("v")
-		volumes    := c.StringSlice("v")
+		volumes   := c.StringSlice("v")
+		detach    := c.Bool("d")
 		command := c.Args().Get(0)
 
 		res := subsystems.ResourceConfig{
@@ -49,6 +54,10 @@ var RunCommand = cli.Command{
 		}
 		if memory != "" {
 			cg.SubsystemsIns = append(cg.SubsystemsIns, &subsystems.MemorySubsystem{})
+		}
+
+		if detach {
+			tty = false
 		}
 
 		Run(command, tty, &cg, rootPath, volumes)
