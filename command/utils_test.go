@@ -9,6 +9,7 @@ import (
 	"math"
 	"os"
 	"testing"
+	"text/tabwriter"
 	"time"
 )
 
@@ -25,6 +26,7 @@ var (
 	RUNNING			string = "running"
 	STOP			string = "stopped"
 	EXIT			string = "exited"
+	CONTAINS        string = "/var/run/mydocker"
 	INFOLOCATION	string = "/var/run/mydocker/%s"
 	CONFIGNAME		string = "config.json"
 )
@@ -57,8 +59,58 @@ func Test003(t *testing.T)  {
 	containerInfo, _ := GetContainerInfo(uuid)
 	if containerInfo != nil {
 		log.Printf("Pid:%s, Id:%s, Name:%s, Command:%s, CreateTime:%s, Status:%s\n",
-			containerInfo.Pid, containerInfo.Id, containerInfo.Name, containerInfo.CreateTime, containerInfo.Status)
+			containerInfo.Pid, containerInfo.Id, containerInfo.Name, containerInfo.Command, containerInfo.CreateTime, containerInfo.Status)
 	}
+}
+
+func Test004(t *testing.T)  {
+	ShowAllContainers()
+}
+
+func Test005(t *testing.T)  {
+	uuid := readUUID()
+	if err := DeleteContainerInfo(uuid); err != nil {
+		log.Printf("DeleteContainerInfo error %v\n", err)
+	}
+}
+
+func ShowAllContainers() {
+	files, err := ioutil.ReadDir(CONTAINS)
+	if err != nil {
+		fmt.Errorf("readDir error : %v\n", err)
+		return
+	}
+	var containers []*ContainerInfo
+	for _, file := range files {
+		container, err := GetContainerInfo(file.Name())
+		if err != nil {
+			log.Printf("ERROR: %v\n", err)
+			continue
+		}
+		containers = append(containers, container)
+	}
+	w := tabwriter.NewWriter(os.Stdout, 12, 1, 3, ' ', 0)
+	fmt.Fprint(w, "ID\tNAME\tPID\tSTATUS\tCOMMAND\tCREATED\n")
+	for _, item := range containers {
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+			item.Id,
+			item.Name,
+			item.Pid,
+			item.Status,
+			item.Command,
+			item.CreateTime)
+	}
+	if err := w.Flush(); err != nil {
+		fmt.Errorf("Flush error %v", err)
+	}
+}
+
+func DeleteContainerInfo(name string) error {
+	location := fmt.Sprintf(INFOLOCATION, name)
+	if err := os.RemoveAll(location); err != nil {
+		return fmt.Errorf("RemoveAll %s error:%v\n", location, err)
+	}
+	return nil 
 }
 
 func GetContainerInfo(name string) (*ContainerInfo, error) {
