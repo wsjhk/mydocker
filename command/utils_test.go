@@ -29,14 +29,40 @@ var (
 	CONFIGNAME		string = "config.json"
 )
 
+var (
+	uuid = ""
+)
 
 func Test001(t *testing.T)  {
-	uuid := ContainerUUID()
+	uuid = ContainerUUID()
+}
+
+func Test002(t *testing.T)  {
 	if err := RecordContainerInfo(uuid, uuid, uuid, "/bin/top"); err != nil {
 		log.Printf("RecordContainerInfo error : %v\n", err)
 	} else {
 		log.Printf("write successfully!\n")
 	}
+}
+
+func Test003(t *testing.T)  {
+	containerInfo, _ := GetContainerInfo(uuid)
+	if containerInfo != nil {
+		log.Printf("Pid:%s, Id:%s, Name:%s, Command:%s, CreateTime:%s, Status:%s\n",
+			containerInfo.Pid, containerInfo.Id, containerInfo.Name, containerInfo.CreateTime, containerInfo.Status)
+	}
+}
+
+func GetContainerInfo(name string) (*ContainerInfo, error) {
+	location := fmt.Sprintf(INFOLOCATION, name)
+	file 	 := location + "/" + CONFIGNAME
+	containerInfo := &ContainerInfo {}
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, fmt.Errorf("read data %s error:%s\n", data, err)
+	}
+	json.Unmarshal(data, containerInfo)
+	return containerInfo, nil
 }
 
 func RecordContainerInfo(pid, name, id, command string) error {
