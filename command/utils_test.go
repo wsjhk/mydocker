@@ -3,7 +3,11 @@ package command
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"log"
+	"math"
+	"os"
 	"testing"
 	"time"
 )
@@ -28,7 +32,11 @@ var (
 
 func Test001(t *testing.T)  {
 	uuid := ContainerUUID()
-	RecordContainerInfo(uuid, uuid, uuid, "/bin/top")
+	if err := RecordContainerInfo(uuid, uuid, uuid, "/bin/top"); err != nil {
+		log.Printf("RecordContainerInfo error : %v\n", err)
+	} else {
+		log.Printf("write successfully!\n")
+	}
 }
 
 func RecordContainerInfo(pid, name, id, command string) error {
@@ -42,12 +50,21 @@ func RecordContainerInfo(pid, name, id, command string) error {
 	}
 	jsonInfo, _ := json.Marshal(containerInfo)
 	log.Printf("jsonInfo:%s\n", string(jsonInfo))
+	location := fmt.Sprintf(INFOLOCATION, name)
+	file 	 := location + "/" + CONFIGNAME
+	if err := os.MkdirAll(location, 0622); err != nil {
+		return fmt.Errorf("create %s error : %v\n", location, err)
+	}
+
+	if err := ioutil.WriteFile(file, []byte(jsonInfo), 0622); err != nil {
+		return fmt.Errorf("write %s to %s error:%v\n", jsonInfo, file, err)
+	}
 	return nil
 }
 
 func ContainerUUID() string {
 	str := time.Now().UnixNano()
-	containerId := fmt.Sprintf("%d", str)
+	containerId := fmt.Sprintf("%d%d", str, int(math.Abs(float64(rand.Intn(10)))))
 	log.Printf("containerId:%s\n", containerId)
 	return containerId
 }
