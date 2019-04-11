@@ -15,7 +15,7 @@ const (
 	DEFAULTPATH = "/nicktming"
 )
 
-func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string)  {
+func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName string)  {
 	//cmd := exec.Command(command)
 
 	reader, writer, err := os.Pipe()
@@ -42,6 +42,9 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	defer ClearWorkDir(newRootPath, volumes)
 
 
+
+
+
 	cmd.ExtraFiles = []*os.File{reader}
 	sendInitCommand(command, writer)
 
@@ -63,9 +66,16 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	defer cg.Destroy()
 	cg.Apply(strconv.Itoa(cmd.Process.Pid))
 
+	id := ContainerUUID()
+	if containerName == "" {
+		containerName = id
+	}
+	RecordContainerInfo(strconv.Itoa(cmd.Process.Pid), containerName, id, command)
+
 	// false 表明父进程(Run程序)无须等待子进程(Init程序,Init进程后续会被用户程序覆盖)
 	if tty {
 		cmd.Wait()
+		DeleteContainerInfo(containerName)
 	}
 }
 

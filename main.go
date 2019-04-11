@@ -16,6 +16,7 @@ func main()  {
 		command.RunCommand,
 		command.InitCommand,
 		command.CommitCommand,
+		command.ListCommand,
 	}
 
 	err := app.Run(os.Args)

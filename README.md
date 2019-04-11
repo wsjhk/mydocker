@@ -214,3 +214,21 @@ nicktming
 root@nicktming:/nicktming/image01# 
 ```
 
+### code-5.2
+```
+// 前提条件
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+// 运行
+root@nicktming:~/go/src/github.com/nicktming/mydocker# go build .
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d /bin/top
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name test /bin/top
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME                   PID         STATUS      COMMAND     CREATED
+15549958821549242021   15549958821549242021   28396       running     /bin/top    2019-04-11 23:18:02
+15549959221141642621   test                   28451       running     /bin/top    2019-04-11 23:18:42
+
+```

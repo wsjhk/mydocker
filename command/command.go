@@ -29,6 +29,10 @@ var RunCommand = cli.Command{
 			Name: "d",
 			Usage: "enable detach",
 		},
+		cli.StringFlag{
+			Name: "name",
+			Usage: "container name",
+		},
 		/*
 		cli.StringFlag{
 			Name: "v",
@@ -43,6 +47,7 @@ var RunCommand = cli.Command{
 		//volume    := c.String("v")
 		volumes   := c.StringSlice("v")
 		detach    := c.Bool("d")
+		containerName    := c.String("name")
 		command := c.Args().Get(0)
 
 		res := subsystems.ResourceConfig{
@@ -60,7 +65,7 @@ var RunCommand = cli.Command{
 			tty = false
 		}
 
-		Run(command, tty, &cg, rootPath, volumes)
+		Run(command, tty, &cg, rootPath, volumes, containerName)
 		return nil
 	},
 }
@@ -85,6 +90,14 @@ var CommitCommand = cli.Command{
 	Action: func(c *cli.Context) error {
 		imageName := c.Args().Get(0)
 		Commit(imageName)
+		return nil
+	},
+}
+
+var ListCommand = cli.Command{
+	Name: "ps",
+	Action: func(c *cli.Context) error {
+		List()
 		return nil
 	},
 }
