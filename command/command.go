@@ -47,7 +47,7 @@ var RunCommand = cli.Command{
 		//volume    := c.String("v")
 		volumes   := c.StringSlice("v")
 		detach    := c.Bool("d")
-		containerName    := c.Bool("name")
+		containerName    := c.String("name")
 		command := c.Args().Get(0)
 
 		res := subsystems.ResourceConfig{
