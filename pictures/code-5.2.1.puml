@@ -1,0 +1,37 @@
+
+
+@startuml
+title 实现列出所有运行容器
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant ListCommand
+participant List
+
+
+user -> mydocker : 1. mydocker ps
+activate mydocker
+mydocker -> ListCommand: 2. 解析参数
+activate ListCommand
+ListCommand -> List: 3. 发请求
+activate List
+List --> ListCommand: 4. 找到所有运行容器返回
+deactivate List
+ListCommand --> mydocker: 5. 返回
+deactivate ListCommand
+mydocker --> user: 6. 打印所有运行中容器
+deactivate mydocker
+
+@enduml
