@@ -56,8 +56,9 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	} else {
 		logFile, err := GetLogFile(containerName)
 		if err != nil {
-			cmd.Stdout = logFile
+			log.Printf("GetLogFile error:%v\n", err)
 		}
+		cmd.Stdout = logFile
 	}
 	/**
 	 *   Start() will not block, so it needs to use Wait()
