@@ -17,4 +17,5 @@ var (
 	CONTAINS         = "/var/run/mydocker"
 	INFOLOCATION	 = "/var/run/mydocker/%s"
 	CONFIGNAME		 = "config.json"
+	CONTAINERLOGS	 = "container.log"
 )

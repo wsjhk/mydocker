@@ -1,5 +1,11 @@
 package command
 
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+)
+
 //import (
 //	"encoding/json"
 //	"fmt"
@@ -154,3 +160,4 @@ package command
 //	log.Printf("containerId:%s\n", containerId)
 //	return containerId
 //}
+

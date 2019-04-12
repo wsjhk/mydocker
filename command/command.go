@@ -101,3 +101,12 @@ var ListCommand = cli.Command{
 		return nil
 	},
 }
+
+var LogCommand = cli.Command{
+	Name: "logs",
+	Action: func(c *cli.Context) error {
+		containerName := c.Args().Get(0)
+		Logs(containerName)
+		return nil
+	},
+}
