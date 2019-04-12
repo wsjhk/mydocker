@@ -32,7 +32,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 
-	log.Printf("volume:%s\n", volumes)
+	//log.Printf("volume:%s\n", volumes)
 
 	newRootPath := getRootPath(rootPath)
 	cmd.Dir = newRootPath + "/busybox"
@@ -56,7 +56,8 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	} else {
 		logFile, err := GetLogFile(containerName)
 		if err != nil {
-			log.Printf("GetLogFile error:%v\n", err)
+			fmt.Errorf("GetLogFile error:%v\n", err)
+			return
 		}
 		cmd.Stdout = logFile
 	}
