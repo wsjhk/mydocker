@@ -232,3 +232,26 @@ ID                     NAME                   PID         STATUS      COMMAND   
 15549959221141642621   test                   28451       running     /bin/top    2019-04-11 23:18:42
 
 ```
+
+### code-5.3
+```
+// 前提条件
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+// 运行
+root@nicktming:~/go/src/github.com/nicktming/mydocker# go build .
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name test /bin/top
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME        PID         STATUS      COMMAND     CREATED
+15550701463180420741   test        2440        running     /bin/top    2019-04-12 19:55:46
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker logs test
+Mem: 887176K used, 130636K free, 408K shrd, 108584K buff, 571360K cached
+CPU:  0.6% usr  0.6% sys  0.0% nic 98.6% idle  0.2% io  0.0% irq  0.0% sirq
+Load average: 0.00 0.01 0.05 2/98 3
+  PID  PPID USER     STAT   VSZ %VSZ CPU %CPU COMMAND
+    1     0 root     R     1280  0.1   0  0.0 /bin/top
+
+```
