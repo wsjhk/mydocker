@@ -92,3 +92,18 @@ func ContainerUUID() string {
 	log.Printf("containerId:%s\n", containerId)
 	return containerId
 }
+
+func GetLogFile(containerName string) (*os.File, error) {
+	path := fmt.Sprintf(INFOLOCATION, containerName)
+	if file , err := os.Create(path); err != nil {
+		return nil, fmt.Errorf("os.Create(%s) error : %v\n", path, err)
+	} else {
+		return file, nil
+	}
+}
+
+func ReadLogs(containerName string) string {
+	path := fmt.Sprintf(INFOLOCATION, containerName)
+	data, _ := ioutil.ReadFile(path)
+	return string(data)
+}
