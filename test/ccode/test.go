@@ -7,7 +7,7 @@ package ccode
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-void test() {
+__attribute__((constructor)) void enter_namespace(void) {
 	char *mydocker_pid;
 	mydocker_pid = getenv("mydocker_pid");
 	int i;
