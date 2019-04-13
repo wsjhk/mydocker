@@ -116,7 +116,7 @@ var ExecCommand = cli.Command{
 	Name: "exec",
 	Action: func(c *cli.Context) error {
 		containerName := c.Args().Get(0)
-		command 	  := c.Args().Get(0)
+		command 	  := c.Args().Get(1)
 		log.Printf("containerName:%s,command:%s\n", containerName, command)
 		Exec(containerName, command)
 		return nil
