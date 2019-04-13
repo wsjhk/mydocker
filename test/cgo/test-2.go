@@ -1,13 +1,21 @@
 package main
 
 /*
+#include <errno.h>
+#include <sched.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
 void test() {
+	char *mydocker_pid;
+	mydocker_pid = getenv("mydocker_pid");
 	int i;
 	char nspath[1024];
 	char *namespaces[] = { "ipc", "uts", "net", "pid", "mnt" };
 
 	for (i=0; i<5; i++) {
-		sprintf(nspath, "/proc/21218/ns/%s", namespaces[i]);
+		sprintf(nspath, "/proc/%s/ns/%s", mydocker_pid, namespaces[i]);
 		int fd = open(nspath, O_RDONLY);
 
 		if (setns(fd, 0) == -1) {
