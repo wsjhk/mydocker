@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	_ "github.com/xianlubird/mydocker/nsenter"
 )
 
 func Exec(containerName, command string) {
