@@ -4,6 +4,7 @@ import (
 	"github.com/nicktming/mydocker/cgroups"
 	"github.com/nicktming/mydocker/cgroups/subsystems"
 	"github.com/urfave/cli"
+	"log"
 )
 
 var RunCommand = cli.Command{
@@ -116,6 +117,7 @@ var ExecCommand = cli.Command{
 	Action: func(c *cli.Context) error {
 		containerName := c.Args().Get(0)
 		command 	  := c.Args().Get(0)
+		log.Printf("containerName:%s,command:%s\n", containerName, command)
 		Exec(containerName, command)
 		return nil
 	},
