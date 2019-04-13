@@ -110,3 +110,13 @@ var LogCommand = cli.Command{
 		return nil
 	},
 }
+
+var ExecCommand = cli.Command{
+	Name: "exec",
+	Action: func(c *cli.Context) error {
+		containerName := c.Args().Get(0)
+		command 	  := c.Args().Get(0)
+		Exec(containerName, command)
+		return nil
+	},
+}
