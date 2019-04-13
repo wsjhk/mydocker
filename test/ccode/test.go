@@ -10,6 +10,7 @@ package ccode
 __attribute__((constructor)) void enter_namespace(void) {
 	char *mydocker_pid;
 	mydocker_pid = getenv("mydocker_pid");
+	fprintf(stdout, "c code mydocker_pid: %s\n", mydocker_pid);
 	int i;
 	char nspath[1024];
 	char *namespaces[] = { "ipc", "uts", "net", "pid", "mnt" };

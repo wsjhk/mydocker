@@ -1,0 +1,38 @@
+
+
+@startuml
+title 实现列出所有运行容器
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant ExecCommand
+participant Exec
+participant Cgo
+
+
+user -> mydocker : 1. mydocker exec 容器名 /bin/sh
+activate mydocker
+mydocker -> ExecCommand: 2. 解析参数
+activate ExecCommand
+ExecCommand -> Exec: 3. 发请求
+activate Exec
+Exec --> ExecCommand: 4. 找到该容器日志
+deactivate Exec
+ExecCommand --> mydocker: 5. 返回
+deactivate ExecCommand
+mydocker --> user: 6. 打印该容器日志
+deactivate mydocker
+
+@enduml
