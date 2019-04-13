@@ -8,7 +8,7 @@ package nsenter
 #include <string.h>
 #include <fcntl.h>
 
-__attribute__((constructor)) void enter_namespace(void) {
+void enter_namespace(void) {
 	fprintf(stdout, "C code executed\n");
 	char *mydocker_pid;
 	mydocker_pid = getenv("mydocker_pid");
@@ -47,3 +47,7 @@ __attribute__((constructor)) void enter_namespace(void) {
 }
 */
 import "C"
+
+func EnterNamespace()  {
+	C.enter_namespace()
+}

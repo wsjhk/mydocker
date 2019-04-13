@@ -2,12 +2,8 @@ package command
 
 import (
 	"fmt"
+	"github.com/nicktming/mydocker/nsenter"
 	"os"
-)
-
-var (
-	MYDOCKER_PID = "mydocker_pid"
-	MYDOCKER_COMMAND = "mydocker_cmd"
 )
 
 func Exec(containerName, command string) {
@@ -17,6 +13,7 @@ func Exec(containerName, command string) {
 		return
 	}
 	pid := containerInfo.Pid
-	os.Setenv(MYDOCKER_PID, pid)
-	os.Setenv(MYDOCKER_COMMAND, command)
+	os.Setenv("mydocker_pid", pid)
+	os.Setenv("mydocker_cmd", command)
+	nsenter.EnterNamespace()
 }
