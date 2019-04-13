@@ -17,13 +17,12 @@ void test() {
 		}
 		close(fd);
 	}
-	int res = system(mydocker_cmd);
+	int res = system("/bin/sh");
 	exit(0);
 	return;
 }
  */
 import "C"
-
 
 func main()  {
 	C.test()
