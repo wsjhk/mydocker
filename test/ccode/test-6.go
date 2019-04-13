@@ -1,8 +1,7 @@
-package main
+package ccode
 
 import (
 	"log"
-	_ "github.com/nicktming/mydocker/test/ccode"
 )
 
 func main()  {
