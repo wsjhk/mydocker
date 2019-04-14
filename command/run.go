@@ -62,7 +62,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	} else {
 		logFile, err := GetLogFile(containerName)
 		if err != nil {
-			fmt.Errorf("GetLogFile(%s) error:%v\n", containerName, err)
+			fmt.Errorf("GetLogFile error:%v\n", err)
 			return
 		}
 		cmd.Stdout = logFile

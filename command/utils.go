@@ -94,11 +94,11 @@ func ContainerUUID() string {
 }
 
 func GetLogFile(containerName string) (*os.File, error) {
-	path    := fmt.Sprintf(INFOLOCATION, containerName)
-	if err := os.MkdirAll(path, 0644); err != nil {
-		return nil, fmt.Errorf("os.MkdirAll(%s, 0644) error : %v\n", path, err)
+	path := fmt.Sprintf(INFOLOCATION, containerName)
+	logFile := path + "/" + CONTAINERLOGS
+	if err := os.MkdirAll(path, 0622); err != nil {
+		return nil, fmt.Errorf("create %s error : %v\n", path, err)
 	}
-	logFile := path + "/container.log"
 	if file , err := os.Create(logFile); err != nil {
 		return nil, fmt.Errorf("os.Create(%s) error : %v\n", path, err)
 	} else {
