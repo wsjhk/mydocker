@@ -80,8 +80,6 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	defer cg.Destroy()
 	cg.Apply(strconv.Itoa(cmd.Process.Pid))
 
-
-
 	RecordContainerInfo(strconv.Itoa(cmd.Process.Pid), containerName, id, command)
 
 	// false 表明父进程(Run程序)无须等待子进程(Init程序,Init进程后续会被用户程序覆盖)
@@ -155,7 +153,7 @@ func ClearVolume(rootPath, volume string)  {
 		mountPath 	  := strings.Split(volume, ":")[1]
 		containerPath := containerMntPath + mountPath
 		if _, err := exec.Command("umount", "-f", containerPath).CombinedOutput(); err != nil {
-			log.Printf("mount -f %s, err:%v\n", containerPath, err)
+			log.Printf("umount -f %s, err:%v\n", containerPath, err)
 		}
 		if err := os.RemoveAll(containerPath); err != nil {
 			log.Printf("remove %s, err:%v\n", containerPath, err)

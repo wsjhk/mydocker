@@ -108,7 +108,8 @@ func GetLogFile(containerName string) (*os.File, error) {
 
 func ReadLogs(containerName string) string {
 	path := fmt.Sprintf(INFOLOCATION, containerName)
-	data, _ := ioutil.ReadFile(path)
+	logFile := path + "/" + CONTAINERLOGS
+	data, _ := ioutil.ReadFile(logFile)
 	return string(data)
 }
 
