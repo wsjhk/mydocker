@@ -122,3 +122,11 @@ func UpdateContainerInfo(containerInfo *ContainerInfo) error {
 	}
 	return nil
 }
+
+func RemoveContainerInfo(containerInfo *ContainerInfo) error {
+	location := fmt.Sprintf(INFOLOCATION, containerInfo.Name)
+	if err := os.RemoveAll(location); err != nil {
+		return fmt.Errorf("os.RemoveAll(%s) %v\n", location, err)
+	}
+	return nil
+}
