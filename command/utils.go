@@ -114,7 +114,7 @@ func ReadLogs(containerName string) string {
 
 func UpdateContainerInfo(containerInfo *ContainerInfo) error {
 	jsonInfo, _ := json.Marshal(containerInfo)
-	log.Printf("jsonInfo:%s\n", string(jsonInfo))
+	//log.Printf("jsonInfo:%s\n", string(jsonInfo))
 	location := fmt.Sprintf(INFOLOCATION, containerInfo.Name)
 	file 	 := location + "/" + CONFIGNAME
 	if err := ioutil.WriteFile(file, []byte(jsonInfo), 0622); err != nil {
