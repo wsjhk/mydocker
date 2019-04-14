@@ -127,3 +127,14 @@ var ExecCommand = cli.Command{
 		return nil
 	},
 }
+
+var StopCommand = cli.Command{
+	Name: "stop",
+	Usage: "stop a container",
+	Action: func(c *cli.Context) error {
+		containerName := c.Args().Get(0)
+		Stop(containerName)
+		return nil
+	},
+}
+
