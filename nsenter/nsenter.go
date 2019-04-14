@@ -11,16 +11,17 @@ package nsenter
 __attribute__((constructor)) void enter_namespace(void) {
 	char *mydocker_pid;
 	mydocker_pid = getenv("mydocker_pid");
-	fprintf(stdout, "c code mydocker_pid : %s\n", mydocker_pid);
-	if (mydocker_pid != null) {
+	//fprintf(stdout, "c code mydocker_pid : %s\n", mydocker_pid);
+	if (mydocker_pid) {
 		fprintf(stdout, "got mydocker_pid=%s\n", mydocker_pid);
 	} else {
-		fprintf(stdout, "missing mydocker_pid env skip nsenter");
+		printf("missing mydocker_pid env skip nsenter\n");
+		fprintf(stdout, "missing mydocker_pid env skip nsenter\n");
 		return;
 	}
 	char *mydocker_cmd;
 	mydocker_cmd = getenv("mydocker_cmd");
-	if (mydocker_cmd != null) {
+	if (mydocker_cmd) {
 		fprintf(stdout, "got mydocker_cmd=%s\n", mydocker_cmd);
 	} else {
 		fprintf(stdout, "missing mydocker_cmd env skip nsenter");
