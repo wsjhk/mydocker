@@ -26,7 +26,13 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 
 	//cmd := exec.Command("/proc/self/exe", "init", command)
 
-	cmd := exec.Command("/proc/self/exe", "init")
+	initCmd, err := os.Readlink("/proc/self/exe")
+	if err != nil {
+		fmt.Errorf("get init process error %v", err)
+		return
+	}
+
+	cmd := exec.Command(initCmd, "init")
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,

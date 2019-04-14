@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/cli"
 	"log"
 	"os"
+	_ "github.com/nicktming/mydocker/nsenter"
 )
 
 func main()  {
@@ -18,6 +19,7 @@ func main()  {
 		command.CommitCommand,
 		command.ListCommand,
 		command.LogCommand,
+		command.ExecCommand,
 	}
 
 	err := app.Run(os.Args)

@@ -1,0 +1,48 @@
+
+
+@startuml
+title 实现进入运行容器
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant ExecCommand
+participant Exec
+participant Cgo
+
+
+user -> mydocker : 1. mydocker exec 容器名 /bin/sh
+activate mydocker
+== 第一次执行exec ==
+mydocker --> Cgo: 2. 执行Cgo返回(因为没有设置环境变量mydocker_pid)
+mydocker -> ExecCommand: 3. 解析参数
+activate ExecCommand
+ExecCommand -> Exec: 4. 获取容器pid并设置环境变量\nmydocker_pid,mydocker_cmd
+activate Exec
+Exec --> ExecCommand: 5. fork新进程
+deactivate Exec
+ExecCommand --> mydocker: 6. 返回
+deactivate ExecCommand
+mydocker -> mydocker: 7. 调用自己\n/proc/self/exe exec
+
+== 第二次执行exec ==
+mydocker --> Cgo: 8. 执行Cgo 获得环境变量mydocker_pid,mydocker_cmd\n执行mydocker_cmd命令
+
+Cgo --> mydocker: 9. 执行mydocker_cmd命令的新容器
+mydocker --> user: 10. 返回容器
+
+mydocker -> ExecCommand: 11. waiting (等待容器执行结束)
+deactivate mydocker
+
+@enduml
