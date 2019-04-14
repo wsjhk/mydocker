@@ -232,3 +232,110 @@ ID                     NAME                   PID         STATUS      COMMAND   
 15549959221141642621   test                   28451       running     /bin/top    2019-04-11 23:18:42
 
 ```
+
+### code-5.3
+```
+// 前提条件
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+// 运行
+root@nicktming:~/go/src/github.com/nicktming/mydocker# go build .
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d /bin/top
+2019/04/12 21:35:51 rootPath:
+2019/04/12 21:35:51 rootPath is empaty, set cmd.Dir by default: /nicktming/mnt
+2019/04/12 21:35:51 mkdir /nicktming/writerLayer err:mkdir /nicktming/writerLayer: file exists
+2019/04/12 21:35:51 containerId:15550761518017354161
+2019/04/12 21:35:51 jsonInfo:{"pid":"11447","id":"15550761518017354161","name":"15550761518017354161","command":"/bin/top","createTime":"2019-04-12 21:35:51","status":"running"}
+2019/04/12 21:35:51 mount -f /nicktming/mnt, err:exit status 1
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME                   PID         STATUS      COMMAND     CREATED
+15550761518017354161   15550761518017354161   11447       running     /bin/top    2019-04-12 21:35:51
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker logs 15550761518017354161
+
+Mem: 881648K used, 136164K free, 400K shrd, 110080K buff, 558300K cached
+CPU:  0.0% usr  0.0% sys  0.0% nic  100% idle  0.0% io  0.0% irq  0.0% sirq
+Load average: 0.02 0.04 0.05 1/102 3
+  PID  PPID USER     STAT   VSZ %VSZ CPU %CPU COMMAND
+    1     0 root     R     1280  0.1   0  0.0 /bin/top
+```
+
+### code-5.4
+```
+// 前提条件
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+// 运行
+root@nicktming:~/go/src/github.com/nicktming/mydocker# git clone https://github.com/nicktming/mydocker.git
+root@nicktming:~/go/src/github.com/nicktming/mydocker# git checkout code-5.4
+root@nicktming:~/go/src/github.com/nicktming/mydocker# go build .
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d /bin/top
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+missing mydocker_pid env skip nsenter
+ID                     NAME                   PID         STATUS      COMMAND     CREATED
+15552033304408860601   15552033304408860601   21338       running     /bin/top    2019-04-14 08:55:30
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ps -ef | grep 21338
+root     21338     1  0 08:55 pts/3    00:00:00 /bin/top
+root     31541 29996  0 10:43 pts/4    00:00:00 grep --color=auto 21338
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker exec 15552033304408860601 /bin/sh
+missing mydocker_pid env skip nsenter
+2019/04/14 10:41:44 containerName:15552033304408860601,command:/bin/sh
+got mydocker_pid=21338
+got mydocker_cmd=/bin/sh
+setns on ipc namespace succeeded
+setns on uts namespace succeeded
+setns on net namespace succeeded
+setns on pid namespace succeeded
+setns on mnt namespace succeeded
+/ # ps -l
+PID   USER     TIME  COMMAND
+    1 root      0:00 /bin/top
+    7 root      0:00 /bin/sh
+    8 root      0:00 ps -l
+/ # ps -ef
+PID   USER     TIME  COMMAND
+    1 root      0:00 /bin/top
+    7 root      0:00 /bin/sh
+    9 root      0:00 ps -ef
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+```
+
+# code-5.5
+```
+// 前提条件
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+// 运行
+root@nicktming:~/go/src/github.com/nicktming/mydocker# git clone https://github.com/nicktming/mydocker.git
+root@nicktming:~/go/src/github.com/nicktming/mydocker# git checkout code-5.5
+root@nicktming:~/go/src/github.com/nicktming/mydocker# go build .
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID          NAME        PID         STATUS      COMMAND     CREATED
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d /bin/top
+2019/04/14 16:27:07 rootPath:
+2019/04/14 16:27:07 rootPath is empaty, set cmd.Dir by default: /nicktming/mnt
+2019/04/14 16:27:07 mkdir /nicktming/writerLayer err:mkdir /nicktming/writerLayer: file exists
+2019/04/14 16:27:07 containerId:15552304271404236701
+2019/04/14 16:27:07 jsonInfo:{"pid":"30089","id":"15552304271404236701","name":"15552304271404236701","command":"/bin/top","createTime":"2019-04-14 16:27:07","status":"running"}
+2019/04/14 16:27:07 mount -f /nicktming/mnt, err:exit status 1
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME                   PID         STATUS      COMMAND     CREATED
+15552304271404236701   15552304271404236701   30089       running     /bin/top    2019-04-14 16:27:07
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ps -ef | grep top
+root     30089     1  0 16:27 pts/3    00:00:00 /bin/top
+root     30112 26623  0 16:27 pts/3    00:00:00 grep --color=auto top
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker stop 15552304271404236701
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME                   PID         STATUS      COMMAND     CREATED
+15552304271404236701   15552304271404236701               stopped     /bin/top    2019-04-14 16:27:07
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+```

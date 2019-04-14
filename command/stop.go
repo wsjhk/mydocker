@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"syscall"
 )
@@ -10,6 +11,10 @@ func Stop(containerName string)  {
 	containerInfo, err := GetContainerInfo(containerName)
 	if err != nil {
 		fmt.Errorf("GetContainerInfo error:%v\n", err)
+		return
+	}
+	if containerInfo.Pid == "" {
+		log.Printf("container not exists!\n")
 		return
 	}
 	pid, err := strconv.Atoi(containerInfo.Pid)
