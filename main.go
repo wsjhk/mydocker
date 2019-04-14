@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/cli"
 	"log"
 	"os"
+	_ "github.com/nicktming/mydocker/nsenter"
 )
 
 func main()  {
