@@ -1,0 +1,37 @@
+
+
+@startuml
+title 停止容器
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant StopCommand
+participant Stop
+
+
+user -> mydocker : 1. mydocker stop 容器名
+activate mydocker
+mydocker -> StopCommand: 2. 解析参数
+activate StopCommand
+StopCommand -> Stop: 3. 发请求
+activate Stop
+Stop --> StopCommand: 4. 找到容器pid并kill\n更新容器metadata
+deactivate Stop
+StopCommand --> mydocker: 5. 返回
+deactivate StopCommand
+mydocker --> user: 6. 返回
+deactivate mydocker
+
+@enduml
