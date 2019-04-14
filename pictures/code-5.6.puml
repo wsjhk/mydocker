@@ -1,0 +1,42 @@
+
+
+@startuml
+title 删除停止容器
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant RemoveCommand
+participant Remove
+participant RemoveContainerInfo
+
+
+user -> mydocker : 1. mydocker stop containerName
+activate mydocker
+mydocker -> RemoveCommand: 2. 解析参数
+activate RemoveCommand
+RemoveCommand -> Remove: 3. 请求删除容器名为containerName的容器
+activate Remove
+Remove -> RemoveContainerInfo: 删除容器对应的文件夹
+activate RemoveContainerInfo
+RemoveContainerInfo --> Remove: 返回
+deactivate RemoveContainerInfo
+Remove --> RemoveCommand: 4. 返回
+deactivate Remove
+RemoveCommand --> mydocker: 5. 返回
+deactivate RemoveCommand
+mydocker --> user: 6. 返回
+deactivate mydocker
+
+@enduml

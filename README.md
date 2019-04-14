@@ -339,3 +339,38 @@ ID                     NAME                   PID         STATUS      COMMAND   
 15552304271404236701   15552304271404236701               stopped     /bin/top    2019-04-14 16:27:07
 root@nicktming:~/go/src/github.com/nicktming/mydocker# 
 ```
+
+# code-5.6
+```
+// 前提条件
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+// 运行
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name test /bin/top
+2019/04/14 20:34:47 rootPath:
+2019/04/14 20:34:47 rootPath is empaty, set cmd.Dir by default: /nicktming/mnt
+2019/04/14 20:34:47 mkdir /nicktming/writerLayer err:mkdir /nicktming/writerLayer: file exists
+2019/04/14 20:34:47 containerId:15552452873180321921
+2019/04/14 20:34:47 jsonInfo:{"pid":"23197","id":"15552452873180321921","name":"test","command":"/bin/top","createTime":"2019-04-14 20:34:47","status":"running"}
+2019/04/14 20:34:47 mount -f /nicktming/mnt, err:exit status 1
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME        PID         STATUS      COMMAND     CREATED
+15552452873180321921   test        23197       running     /bin/top    2019-04-14 20:34:47
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ps -ef | grep top
+root     23197     1  0 20:34 pts/1    00:00:00 /bin/top
+root     23231 21810  0 20:34 pts/1    00:00:00 grep --color=auto top
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME        PID         STATUS      COMMAND     CREATED
+15552452873180321921   test        23197       running     /bin/top    2019-04-14 20:34:47
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker stop test
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME        PID         STATUS      COMMAND     CREATED
+15552452873180321921   test                    stopped     /bin/top    2019-04-14 20:34:47
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker rm test
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID          NAME        PID         STATUS      COMMAND     CREATED
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+```
