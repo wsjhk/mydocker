@@ -53,7 +53,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 
 	newRootPath := getRootPath(rootPath, imageName)
 	//cmd.Dir = newRootPath + "/busybox"
-	if err := NewWorkDir(newRootPath, containerName, volumes); err == nil {
+	if err := NewWorkDir(newRootPath, containerName, imageName, volumes); err == nil {
 		cmd.Dir = newRootPath + "/mnt/" + containerName
 	} else {
 		log.Printf("NewWorkDir error:%v\n", err)
