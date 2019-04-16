@@ -118,16 +118,13 @@ func getRootPath(rootPath string) string {
 		return defaultPath
 	}
 	imagePath := rootPath + "/busybox"
-	exist, _ = PathExists(imageTar)
-	if !exist {
-		if err := os.Mkdir(imagePath, 0777); err != nil {
-			log.Printf("mkdir %s err:%v, set cmd.Dir by default: %s/mnt\n", imagePath, err, defaultPath)
-			return defaultPath
-		}
-		if _, err := exec.Command("tar", "-xvf", imageTar, "-C", imagePath).CombinedOutput(); err != nil {
-			log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: %s/mnt\n", imageTar, imagePath, err, defaultPath)
-			return defaultPath
-		}
+	if err := os.MkdirAll(imagePath, 0777); err != nil {
+		log.Printf("mkdir %s err:%v, set cmd.Dir by default: %s/mnt\n", imagePath, err, defaultPath)
+		return defaultPath
+	}
+	if _, err := exec.Command("tar", "-xvf", imageTar, "-C", imagePath).CombinedOutput(); err != nil {
+		log.Printf("tar -xvf %s -C %s, err:%v, set cmd.Dir by default: %s/mnt\n", imageTar, imagePath, err, defaultPath)
+		return defaultPath
 	}
 	return rootPath
 }
