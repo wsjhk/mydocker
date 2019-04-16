@@ -374,3 +374,66 @@ root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
 ID          NAME        PID         STATUS      COMMAND     CREATED
 root@nicktming:~/go/src/github.com/nicktming/mydocker# 
 ```
+
+# code-5.7
+```
+// 前提条件
+-----------------------------------------------terminal 01---------------------------------------------------------
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+root@nicktming:/nicktming# 
+
+-----------------------------------------------terminal 02---------------------------------------------------------
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -it -name container01 -v /nicktming/volume1:/containerVolume busybox /bin/sh
+2019/04/16 23:14:37 rootPath is empaty, set rootPath: /nicktming
+2019/04/16 23:14:37 current path: /nicktming/mnt/container01.
+/ # ls -l
+total 48
+drwxr-xr-x    2 root     root         12288 Feb 14 18:58 bin
+drwxr-xr-x    4 root     root          4096 Apr 16 15:14 containerVolume
+drwxr-xr-x    4 root     root          4096 Mar 17 16:05 dev
+drwxr-xr-x    3 root     root          4096 Mar 17 16:05 etc
+drwxr-xr-x    2 nobody   nogroup       4096 Feb 14 18:58 home
+dr-xr-xr-x  103 root     root             0 Apr 16 15:14 proc
+drwx------    2 root     root          4096 Apr 16 15:14 root
+drwxr-xr-x    2 root     root          4096 Mar 17 16:05 sys
+drwxrwxrwt    2 root     root          4096 Feb 14 18:58 tmp
+drwxr-xr-x    3 root     root          4096 Feb 14 18:58 usr
+drwxr-xr-x    4 root     root          4096 Feb 14 18:58 var
+/ # echo "container01:test01" > containerVolume/test01.txt
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+
+-----------------------------------------------terminal 03---------------------------------------------------------
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -it -name container02 -v /nicktming/volume2:/containerVolume busybox /bin/sh
+2019/04/16 23:15:41 rootPath is empaty, set rootPath: /nicktming
+2019/04/16 23:15:41 current path: /nicktming/mnt/container02.
+/ # ls -l
+total 48
+drwxr-xr-x    2 root     root         12288 Feb 14 18:58 bin
+drwxr-xr-x    4 root     root          4096 Apr 16 15:15 containerVolume
+drwxr-xr-x    4 root     root          4096 Mar 17 16:05 dev
+drwxr-xr-x    3 root     root          4096 Mar 17 16:05 etc
+drwxr-xr-x    2 nobody   nogroup       4096 Feb 14 18:58 home
+dr-xr-xr-x  105 root     root             0 Apr 16 15:15 proc
+drwx------    2 root     root          4096 Apr 16 15:15 root
+drwxr-xr-x    2 root     root          4096 Mar 17 16:05 sys
+drwxrwxrwt    2 root     root          4096 Feb 14 18:58 tmp
+drwxr-xr-x    3 root     root          4096 Feb 14 18:58 usr
+drwxr-xr-x    4 root     root          4096 Feb 14 18:58 var
+/ # echo "container02:test01" > containerVolume/test01.txt
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+
+-----------------------------------------------terminal 01---------------------------------------------------------
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# cat volume1/test01.txt 
+container01:test01
+root@nicktming:/nicktming# cat volume2/test01.txt 
+container02:test01
+root@nicktming:/nicktming#
+
+```
