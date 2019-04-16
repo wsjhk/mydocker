@@ -38,14 +38,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
 	}
 
-	//log.Printf("volume:%s\n", volumes)
 
-	newRootPath := getRootPath(rootPath)
-	cmd.Dir = newRootPath + "/busybox"
-	if err := NewWorkDir(newRootPath, volumes); err == nil {
-		cmd.Dir = newRootPath + "/mnt"
-	}
-	defer ClearWorkDir(newRootPath, volumes)
 
 
 	cmd.ExtraFiles = []*os.File{reader}
@@ -55,6 +48,16 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	if containerName == "" {
 		containerName = id
 	}
+
+	//log.Printf("volume:%s\n", volumes)
+
+	newRootPath := getRootPath(rootPath)
+	cmd.Dir = newRootPath + "/busybox"
+	if err := NewWorkDir(newRootPath, containerName, volumes); err == nil {
+		cmd.Dir = newRootPath + "/mnt"
+	}
+	defer ClearWorkDir(newRootPath, containerName, volumes)
+
 	if tty {
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
@@ -141,17 +144,17 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-func ClearWorkDir(rootPath string, volumes []string)  {
+func ClearWorkDir(rootPath, containerName string, volumes []string)  {
 	for _, volume := range volumes {
-		ClearVolume(rootPath, volume)
+		ClearVolume(rootPath, volume, containerName)
 	}
-	ClearMountPoint(rootPath)
-	ClearWriterLayer(rootPath)
+	ClearMountPoint(rootPath, containerName)
+	ClearWriterLayer(rootPath, containerName)
 }
 
-func ClearVolume(rootPath, volume string)  {
+func ClearVolume(rootPath, volume, containerName string)  {
 	if volume != "" {
-		containerMntPath   := rootPath + "/mnt"
+		containerMntPath   := rootPath + "/mnt/" + containerName
 		mountPath 	  := strings.Split(volume, ":")[1]
 		containerPath := containerMntPath + mountPath
 		if _, err := exec.Command("umount", "-f", containerPath).CombinedOutput(); err != nil {
@@ -163,8 +166,8 @@ func ClearVolume(rootPath, volume string)  {
 	}
 }
 
-func ClearMountPoint(rootPath string)  {
-	mnt := rootPath + "/mnt"
+func ClearMountPoint(rootPath, containerName string)  {
+	mnt := rootPath + "/mnt/" + containerName
 	if _, err := exec.Command("umount", "-f", mnt).CombinedOutput(); err != nil {
 		log.Printf("mount -f %s, err:%v\n", mnt, err)
 	}
@@ -173,34 +176,34 @@ func ClearMountPoint(rootPath string)  {
 	}
 }
 
-func ClearWriterLayer(rootPath string) {
-	writerLayer := rootPath + "/writerLayer"
+func ClearWriterLayer(rootPath, containerName string) {
+	writerLayer := rootPath + "/writerLayer/" + containerName
 	if err := os.RemoveAll(writerLayer); err != nil {
 		log.Printf("remove %s, err:%v\n", writerLayer, err)
 	}
 }
 
-func NewWorkDir(rootPath string, volumes []string) error {
-	if err := CreateContainerLayer(rootPath); err != nil {
+func NewWorkDir(rootPath, containerName string, volumes []string) error {
+	if err := CreateContainerLayer(rootPath, containerName); err != nil {
 		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
 	}
-	if err := CreateMntPoint(rootPath); err != nil {
+	if err := CreateMntPoint(rootPath, containerName); err != nil {
 		return fmt.Errorf("CreateMntPoint(%s) error: %v.\n", rootPath, err)
 	}
-	if err := SetMountPoint(rootPath); err != nil {
+	if err := SetMountPoint(rootPath, containerName); err != nil {
 		return fmt.Errorf("SetMountPoint(%s) error: %v.\n", rootPath, err)
 	}
 	for _, volume := range volumes {
-		if err := CreateVolume(rootPath, volume); err != nil {
+		if err := CreateVolume(rootPath, volume, containerName); err != nil {
 			return fmt.Errorf("CreateVolume(%s, %s) error: %v.\n", rootPath, volume, err)
 		}
 	}
 	return nil
 }
 
-func CreateVolume(rootPath, volume string) error {
+func CreateVolume(rootPath, volume, containerName string) error {
 	if volume != "" {
-		containerMntPath := rootPath + "/mnt"
+		containerMntPath := rootPath + "/mnt/" + containerName
 		hostPath 	:= strings.Split(volume, ":")[0]
 		exist, _ := PathExists(hostPath)
 		if !exist {
@@ -224,8 +227,8 @@ func CreateVolume(rootPath, volume string) error {
 	return nil
 }
 
-func CreateContainerLayer(rootPath string) error {
-	writerLayer := rootPath + "/writerLayer"
+func CreateContainerLayer(rootPath, containerName string) error {
+	writerLayer := rootPath + "/writerLayer/" + containerName
 	if err := os.Mkdir(writerLayer, 0777); err != nil {
 		log.Printf("mkdir %s err:%v\n", writerLayer, err)
 		return fmt.Errorf("mkdir %s err:%v\n", writerLayer, err)
@@ -233,8 +236,8 @@ func CreateContainerLayer(rootPath string) error {
 	return nil 
 }
 
-func CreateMntPoint(rootPath string) error {
-	mnt := rootPath + "/mnt"
+func CreateMntPoint(rootPath, containerName string) error {
+	mnt := rootPath + "/mnt/" + containerName
 	if err := os.Mkdir(mnt, 0777); err != nil {
 		log.Printf("mkdir %s err:%v\n", mnt, err)
 		return fmt.Errorf("mkdir %s err:%v\n", mnt, err)
@@ -242,9 +245,9 @@ func CreateMntPoint(rootPath string) error {
 	return nil
 }
 
-func SetMountPoint(rootPath string) error {
-	dirs := "dirs=" + rootPath + "/writerLayer:" + rootPath + "/busybox"
-	mnt := rootPath + "/mnt"
+func SetMountPoint(rootPath, containerName string) error {
+	dirs := "dirs=" + rootPath + "/writerLayer/" + containerName + ":" + rootPath + "/busybox"
+	mnt := rootPath + "/mnt/" + containerName
 	if _, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mnt).CombinedOutput(); err != nil {
 		log.Printf("mount -t aufs -o %s none %s, err:%v\n", dirs, mnt, err)
 		return fmt.Errorf("mount -t aufs -o %s none %s, err:%v\n", dirs, mnt, err)
