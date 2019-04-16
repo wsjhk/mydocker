@@ -73,7 +73,7 @@ func RecordContainerInfo(pid, name, id, command string) error {
 		Status:		RUNNING,
 	}
 	jsonInfo, _ := json.Marshal(containerInfo)
-	log.Printf("jsonInfo:%s\n", string(jsonInfo))
+	//log.Printf("jsonInfo:%s\n", string(jsonInfo))
 	location := fmt.Sprintf(INFOLOCATION, name)
 	file 	 := location + "/" + CONFIGNAME
 	if err := os.MkdirAll(location, 0622); err != nil {
@@ -89,7 +89,7 @@ func RecordContainerInfo(pid, name, id, command string) error {
 func ContainerUUID() string {
 	str := time.Now().UnixNano()
 	containerId := fmt.Sprintf("%d%d", str, int(math.Abs(float64(rand.Intn(10)))))
-	log.Printf("containerId:%s\n", containerId)
+	//log.Printf("containerId:%s\n", containerId)
 	return containerId
 }
 
