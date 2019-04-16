@@ -108,7 +108,7 @@ func getRootPath(rootPath string) string {
 	//log.Printf("rootPath:%s\n", rootPath)
 	defaultPath := DEFAULTPATH
 	if rootPath == "" {
-		log.Printf("rootPath is empaty, set cmd.Dir by default: %s/mnt\n", defaultPath)
+		log.Printf("rootPath is empaty, set rootPath: %s\n", defaultPath)
 		rootPath = defaultPath
 	}
 	imageTar := rootPath + "/busybox.tar"

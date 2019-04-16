@@ -89,7 +89,7 @@ func RecordContainerInfo(pid, name, id, command string) error {
 func ContainerUUID() string {
 	str := time.Now().UnixNano()
 	containerId := fmt.Sprintf("%d%d", str, int(math.Abs(float64(rand.Intn(10)))))
-	log.Printf("containerId:%s\n", containerId)
+	//log.Printf("containerId:%s\n", containerId)
 	return containerId
 }
 
