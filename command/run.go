@@ -15,7 +15,7 @@ const (
 	DEFAULTPATH = "/nicktming"
 )
 
-func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName string)  {
+func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string)  {
 	//cmd := exec.Command(command)
 
 	reader, writer, err := os.Pipe()
@@ -51,10 +51,13 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 
 	//log.Printf("volume:%s\n", volumes)
 
-	newRootPath := getRootPath(rootPath)
-	cmd.Dir = newRootPath + "/busybox"
+	newRootPath := getRootPath(rootPath, imageName)
+	//cmd.Dir = newRootPath + "/busybox"
 	if err := NewWorkDir(newRootPath, containerName, volumes); err == nil {
 		cmd.Dir = newRootPath + "/mnt/" + containerName
+	} else {
+		log.Printf("NewWorkDir error:%v\n", err)
+		return
 	}
 	defer ClearWorkDir(newRootPath, containerName, volumes)
 
@@ -104,20 +107,20 @@ func sendInitCommand(command string, writer *os.File)  {
 }
 
 
-func getRootPath(rootPath string) string {
+func getRootPath(rootPath, imageName string) string {
 	//log.Printf("rootPath:%s\n", rootPath)
 	defaultPath := DEFAULTPATH
 	if rootPath == "" {
 		log.Printf("rootPath is empaty, set rootPath: %s\n", defaultPath)
 		rootPath = defaultPath
 	}
-	imageTar := rootPath + "/busybox.tar"
+	imageTar := rootPath + "/" + imageName + ".tar"
 	exist, _ := PathExists(imageTar)
 	if !exist {
 		log.Printf("%s does not exist, set cmd.Dir by default: %s/mnt\n", imageTar, defaultPath)
 		return defaultPath
 	}
-	imagePath := rootPath + "/busybox"
+	imagePath := rootPath + "/" + imageName
 	if err := os.MkdirAll(imagePath, 0777); err != nil {
 		log.Printf("mkdir %s err:%v, set cmd.Dir by default: %s/mnt\n", imagePath, err, defaultPath)
 		return defaultPath
@@ -179,14 +182,14 @@ func ClearWriterLayer(rootPath, containerName string) {
 	}
 }
 
-func NewWorkDir(rootPath, containerName string, volumes []string) error {
+func NewWorkDir(rootPath, containerName, imageName string, volumes []string) error {
 	if err := CreateContainerLayer(rootPath, containerName); err != nil {
 		return fmt.Errorf("CreateContainerLayer(%s) error: %v.\n", rootPath, err)
 	}
 	if err := CreateMntPoint(rootPath, containerName); err != nil {
 		return fmt.Errorf("CreateMntPoint(%s) error: %v.\n", rootPath, err)
 	}
-	if err := SetMountPoint(rootPath, containerName); err != nil {
+	if err := SetMountPoint(rootPath, containerName, imageName); err != nil {
 		return fmt.Errorf("SetMountPoint(%s) error: %v.\n", rootPath, err)
 	}
 	for _, volume := range volumes {
@@ -241,8 +244,8 @@ func CreateMntPoint(rootPath, containerName string) error {
 	return nil
 }
 
-func SetMountPoint(rootPath, containerName string) error {
-	dirs := "dirs=" + rootPath + "/writerLayer/" + containerName + ":" + rootPath + "/busybox"
+func SetMountPoint(rootPath, containerName, imageName string) error {
+	dirs := "dirs=" + rootPath + "/writerLayer/" + containerName + ":" + rootPath + "/" + imageName
 	mnt := rootPath + "/mnt/" + containerName
 	if _, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mnt).CombinedOutput(); err != nil {
 		log.Printf("mount -t aufs -o %s none %s, err:%v\n", dirs, mnt, err)

@@ -50,7 +50,8 @@ var RunCommand = cli.Command{
 		volumes   := c.StringSlice("v")
 		detach    := c.Bool("d")
 		containerName    := c.String("name")
-		command := c.Args().Get(0)
+		imageName := c.Args().Get(0)
+		command := c.Args().Get(1)
 
 		res := subsystems.ResourceConfig{
 			MemoryLimit: memory,
@@ -67,7 +68,7 @@ var RunCommand = cli.Command{
 			tty = false
 		}
 
-		Run(command, tty, &cg, rootPath, volumes, containerName)
+		Run(command, tty, &cg, rootPath, volumes, containerName, imageName)
 		return nil
 	},
 }
