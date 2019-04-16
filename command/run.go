@@ -54,7 +54,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	newRootPath := getRootPath(rootPath)
 	cmd.Dir = newRootPath + "/busybox"
 	if err := NewWorkDir(newRootPath, containerName, volumes); err == nil {
-		cmd.Dir = newRootPath + "/mnt"
+		cmd.Dir = newRootPath + "/mnt/" + containerName
 	}
 	defer ClearWorkDir(newRootPath, containerName, volumes)
 
