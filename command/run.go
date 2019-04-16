@@ -105,7 +105,7 @@ func sendInitCommand(command string, writer *os.File)  {
 
 
 func getRootPath(rootPath string) string {
-	log.Printf("rootPath:%s\n", rootPath)
+	//log.Printf("rootPath:%s\n", rootPath)
 	defaultPath := DEFAULTPATH
 	if rootPath == "" {
 		log.Printf("rootPath is empaty, set cmd.Dir by default: %s/mnt\n", defaultPath)
@@ -207,14 +207,14 @@ func CreateVolume(rootPath, volume, containerName string) error {
 		hostPath 	:= strings.Split(volume, ":")[0]
 		exist, _ := PathExists(hostPath)
 		if !exist {
-			if err := os.Mkdir(hostPath, 0777); err != nil {
+			if err := os.MkdirAll(hostPath, 0777); err != nil {
 				log.Printf("mkdir %s err:%v\n", hostPath, err)
 				return fmt.Errorf("mkdir %s err:%v\n", hostPath, err)
 			}
 		}
 		mountPath 	:= strings.Split(volume, ":")[1]
 		containerPath := containerMntPath + mountPath
-		if err := os.Mkdir(containerPath, 0777); err != nil {
+		if err := os.MkdirAll(containerPath, 0777); err != nil {
 			log.Printf("mkdir %s err:%v\n", containerPath, err)
 			return fmt.Errorf("mkdir %s err:%v\n", containerPath, err)
 		}
@@ -229,7 +229,7 @@ func CreateVolume(rootPath, volume, containerName string) error {
 
 func CreateContainerLayer(rootPath, containerName string) error {
 	writerLayer := rootPath + "/writerLayer/" + containerName
-	if err := os.Mkdir(writerLayer, 0777); err != nil {
+	if err := os.MkdirAll(writerLayer, 0777); err != nil {
 		log.Printf("mkdir %s err:%v\n", writerLayer, err)
 		return fmt.Errorf("mkdir %s err:%v\n", writerLayer, err)
 	}
@@ -238,7 +238,7 @@ func CreateContainerLayer(rootPath, containerName string) error {
 
 func CreateMntPoint(rootPath, containerName string) error {
 	mnt := rootPath + "/mnt/" + containerName
-	if err := os.Mkdir(mnt, 0777); err != nil {
+	if err := os.MkdirAll(mnt, 0777); err != nil {
 		log.Printf("mkdir %s err:%v\n", mnt, err)
 		return fmt.Errorf("mkdir %s err:%v\n", mnt, err)
 	}
