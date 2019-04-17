@@ -59,7 +59,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 		log.Printf("NewWorkDir error:%v\n", err)
 		return
 	}
-	defer ClearWorkDir(newRootPath, containerName, volumes)
+	//defer ClearWorkDir(newRootPath, containerName, volumes)
 
 	if tty {
 		cmd.Stderr = os.Stderr
@@ -83,17 +83,19 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	}
 
 	cg.Set()
-	defer cg.Destroy()
+	//defer cg.Destroy()
 	cg.Apply(strconv.Itoa(cmd.Process.Pid))
 
 
 
-	RecordContainerInfo(strconv.Itoa(cmd.Process.Pid), containerName, id, command)
+	RecordContainerInfo(strconv.Itoa(cmd.Process.Pid), containerName, id, command, volumes, newRootPath)
 
 	// false 表明父进程(Run程序)无须等待子进程(Init程序,Init进程后续会被用户程序覆盖)
 	if tty {
 		cmd.Wait()
 		DeleteContainerInfo(containerName)
+		ClearWorkDir(newRootPath, containerName, volumes)
+		cg.Destroy()
 	}
 }
 
