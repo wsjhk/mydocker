@@ -151,3 +151,14 @@ var RemoveCommand = cli.Command{
 	},
 }
 
+var CopyCommand = cli.Command{
+	Name: "cp",
+	Usage: "copy files",
+	Action: func(c *cli.Context) error {
+		source 		:= c.Args().Get(0)
+		destination := c.Args().Get(1)
+		log.Printf("source:%s, destination:%s\n", source, destination)
+		return nil
+	},
+}
+
