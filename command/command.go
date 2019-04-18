@@ -91,8 +91,10 @@ var InitCommand = cli.Command{
 var CommitCommand = cli.Command{
 	Name: "commit",
 	Action: func(c *cli.Context) error {
-		imageName := c.Args().Get(0)
-		Commit(imageName)
+		//imageName := c.Args().Get(0)
+		containerName := c.Args().Get(0)
+		imageName := c.Args().Get(1)
+		Commit(containerName, imageName)
 		return nil
 	},
 }

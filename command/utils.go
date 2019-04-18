@@ -63,7 +63,7 @@ func GetContainerInfo(name string) (*ContainerInfo, error) {
 	return containerInfo, nil
 }
 
-func RecordContainerInfo(pid, name, id, command string) error {
+func RecordContainerInfo(pid, name, id, command string, volumes []string, rootPath string) error {
 	containerInfo := &ContainerInfo {
 		Pid: 		pid,
 		Id:  		id,
@@ -71,6 +71,8 @@ func RecordContainerInfo(pid, name, id, command string) error {
 		Command: 	command,
 		CreateTime: time.Now().Format("2006-01-02 15:04:05"),
 		Status:		RUNNING,
+		Volumes: 	volumes,
+		RootPath: 	rootPath,
 	}
 	jsonInfo, _ := json.Marshal(containerInfo)
 	//log.Printf("jsonInfo:%s\n", string(jsonInfo))

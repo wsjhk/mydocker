@@ -29,4 +29,8 @@ func Stop(containerName string)  {
 	containerInfo.Status = STOP
 	containerInfo.Pid = ""
 	UpdateContainerInfo(containerInfo)
+
+	log.Printf("rootPath:%s\n", containerInfo.RootPath)
+	log.Println(containerInfo.Volumes)
+	ClearWorkDir(containerInfo.RootPath, containerName, containerInfo.Volumes)
 }
