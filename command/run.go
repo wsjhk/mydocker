@@ -159,7 +159,7 @@ func ClearVolume(rootPath, volume, containerName string)  {
 		mountPath 	  := strings.Split(volume, ":")[1]
 		containerPath := containerMntPath + mountPath
 		if _, err := exec.Command("umount", "-f", containerPath).CombinedOutput(); err != nil {
-			log.Printf("mount -f %s, err:%v\n", containerPath, err)
+			log.Printf("umount -f %s, err:%v\n", containerPath, err)
 		}
 		if err := os.RemoveAll(containerPath); err != nil {
 			log.Printf("remove %s, err:%v\n", containerPath, err)
