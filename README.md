@@ -437,3 +437,107 @@ container02:test01
 root@nicktming:/nicktming#
 
 ```
+
+# code-5.7.1
+```
+---------------------------------------terminal 01--------------------------------------------
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+// 启动两个容器 container01 container02
+---------------------------------------terminal 02--------------------------------------------
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name container01 -v /nicktming/from1:/to1 busybox /bin/top
+2019/04/18 22:25:24 rootPath is empaty, set rootPath: /nicktming
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name container02 -v /nicktming/from2:/to2 busybox /bin/top
+2019/04/18 22:25:56 rootPath is empaty, set rootPath: /nicktming
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME          PID         STATUS      COMMAND     CREATED
+15555975245549425111   container01   14158       running     /bin/top    2019-04-18 22:25:24
+15555975563445863921   container02   14218       running     /bin/top    2019-04-18 22:25:56
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker exec container01 /bin/sh
+2019/04/18 22:26:27 containerName:container01,command:/bin/sh
+/ # echo -e "hello container1" >> /to1/test1.txt
+/ # mkdir to1-1
+/ # echo -e "hello cotainer1,to-1,test1" >> /to1-1/test1.txt
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker commit container01 image1
+
+// 查看宿主机内容
+---------------------------------------terminal 01--------------------------------------------
+root@nicktming:/nicktming# cat mnt/container01/to1-1/test1.txt 
+hello cotainer1,to-1,test1
+root@nicktming:/nicktming# cat mnt/container01/to1/test1.txt 
+hello container1
+root@nicktming:/nicktming# ls
+busybox  busybox.tar  from1  from2  image1.tar  mnt  writerLayer
+root@nicktming:/nicktming# 
+
+// 删除容器container01 根据image1镜像启动容器container03 查看是否有to1,to1-1文件夹
+---------------------------------------terminal 02--------------------------------------------
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker stop container01
+2019/04/18 22:35:10 rootPath:/nicktming
+2019/04/18 22:35:10 [/nicktming/from1:/to1]
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker rm container01
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME          PID         STATUS      COMMAND     CREATED
+15555975563445863921   container02   14218       running     /bin/top    2019-04-18 22:25:56
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name container03 image1 /bin/top
+2019/04/18 22:37:50 rootPath is empaty, set rootPath: /nicktming
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME          PID         STATUS      COMMAND     CREATED
+15555975563445863921   container02   14218       running     /bin/top    2019-04-18 22:25:56
+15555982709688329991   container03   15433       running     /bin/top    2019-04-18 22:37:50
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker exec container03 /bin/sh
+2019/04/18 22:38:08 containerName:container03,command:/bin/sh
+/ # ls -l
+total 52
+drwxr-xr-x    2 root     root         12288 Feb 14 18:58 bin
+drwxr-xr-x    4 root     root          4096 Mar 17 16:05 dev
+drwxr-xr-x    3 root     root          4096 Mar 17 16:05 etc
+drwxr-xr-x    2 nobody   nogroup       4096 Feb 14 18:58 home
+dr-xr-xr-x   97 root     root             0 Apr 18 14:37 proc
+drwx------    2 root     root          4096 Apr 18 14:38 root
+drwxr-xr-x    2 root     root          4096 Mar 17 16:05 sys
+drwxrwxrwt    2 root     root          4096 Feb 14 18:58 tmp
+drwxr-xr-x    2 root     root          4096 Apr 18 14:26 to1
+drwxr-xr-x    2 root     root          4096 Apr 18 14:27 to1-1
+drwxr-xr-x    3 root     root          4096 Feb 14 18:58 usr
+drwxr-xr-x    4 root     root          4096 Feb 14 18:58 var
+// 文件夹存在 文件内容也存在 
+/ # cat to1/test1.txt 
+hello container1
+/ # cat to1-1/test1.txt 
+hello cotainer1,to-1,test1
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+
+// 再次根据镜像image1启动 并且用宿主机中的from5映射到容器的/to1 
+//根据aufs原理可知容器层的内容会覆盖镜像层的内容, 因此/to1/test1.txt的内容为hello container05
+root@nicktming:~/go/src/github.com/nicktming/mydocker# mkdir -p /nicktming/from5 && echo "hello container05" > /nicktming/from5/test1.txt
+root@nicktming:~/go/src/github.com/nicktming/mydocker# cat /nicktming/from5/test1.txt 
+hello container05
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -it -name container05 -v /nicktming/from5:/to1 image1 /bin/sh
+2019/04/18 22:45:06 rootPath is empaty, set rootPath: /nicktming
+2019/04/18 22:45:06 current path: /nicktming/mnt/container05.
+/ # ls -l 
+total 52
+drwxr-xr-x    2 root     root         12288 Feb 14 18:58 bin
+drwxr-xr-x    4 root     root          4096 Mar 17 16:05 dev
+drwxr-xr-x    3 root     root          4096 Mar 17 16:05 etc
+drwxr-xr-x    2 nobody   nogroup       4096 Feb 14 18:58 home
+dr-xr-xr-x   97 root     root             0 Apr 18 14:45 proc
+drwx------    2 root     root          4096 Apr 18 14:45 root
+drwxr-xr-x    2 root     root          4096 Mar 17 16:05 sys
+drwxrwxrwt    2 root     root          4096 Feb 14 18:58 tmp
+drwxr-xr-x    4 root     root          4096 Apr 18 14:45 to1
+drwxr-xr-x    2 root     root          4096 Apr 18 14:27 to1-1
+drwxr-xr-x    3 root     root          4096 Feb 14 18:58 usr
+drwxr-xr-x    4 root     root          4096 Feb 14 18:58 var
+/ # cat to1
+to1-1/  to1/
+/ # cat to1/test1.txt 
+hello container05
+```

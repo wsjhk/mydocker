@@ -1,0 +1,37 @@
+
+
+@startuml
+title 通过容器制作镜像
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant CommitCommand
+participant Commit
+
+
+user -> mydocker : 1. mydocker commit 容器名 镜像名
+activate mydocker
+mydocker -> CommitCommand: 2. 解析参数
+activate CommitCommand
+CommitCommand -> Commit: 3. 容器名 镜像名
+activate Commit
+Commit --> CommitCommand: 4. 根据容器名找到挂载点 对挂载点进行打包
+deactivate Commit
+CommitCommand --> mydocker: 5. 打包镜像完成
+deactivate CommitCommand
+mydocker --> user: 6. 返回镜像
+deactivate mydocker
+
+@enduml
