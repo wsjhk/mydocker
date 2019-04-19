@@ -15,8 +15,7 @@ const (
 	DEFAULTPATH = "/nicktming"
 )
 
-func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string)  {
-	//cmd := exec.Command(command)
+func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string, envSlice []string)  {
 
 	reader, writer, err := os.Pipe()
 	if err != nil {
@@ -33,6 +32,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	}
 
 	cmd := exec.Command(initCmd, "init")
+	cmd.Env = append(os.Environ(), envSlice...)
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,

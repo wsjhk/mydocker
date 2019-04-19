@@ -35,6 +35,10 @@ var RunCommand = cli.Command{
 			Name: "name",
 			Usage: "container name",
 		},
+		cli.StringSliceFlag{
+			Name: "e",
+			Usage: "set environment",
+		},
 		/*
 		cli.StringFlag{
 			Name: "v",
@@ -50,6 +54,7 @@ var RunCommand = cli.Command{
 		volumes   := c.StringSlice("v")
 		detach    := c.Bool("d")
 		containerName    := c.String("name")
+		envSlice := c.StringSlice("e")
 		imageName := c.Args().Get(0)
 		command := c.Args().Get(1)
 
@@ -68,7 +73,7 @@ var RunCommand = cli.Command{
 			tty = false
 		}
 
-		Run(command, tty, &cg, rootPath, volumes, containerName, imageName)
+		Run(command, tty, &cg, rootPath, volumes, containerName, imageName, envSlice)
 		return nil
 	},
 }
