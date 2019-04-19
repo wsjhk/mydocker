@@ -15,8 +15,10 @@ const (
 	DEFAULTPATH = "/nicktming"
 )
 
-func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string)  {
+func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string, envSlice []string)  {
 	//cmd := exec.Command(command)
+
+	log.Println(envSlice)
 
 	reader, writer, err := os.Pipe()
 	if err != nil {
