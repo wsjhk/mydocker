@@ -10,7 +10,7 @@ func Copy(source, destination string)  {
 	f1 := strings.Contains(source, ":")
 	f2 := strings.Contains(destination, ":")
 	if (f1 && f2) || (!f1 && !f2) {
-		log.Printf("f1:%v, f2:%v, not correct format\n")
+		log.Printf("f1:%v, f2:%v, not correct format\n", f1, f2)
 		return
 	}
 
