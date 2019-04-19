@@ -541,3 +541,71 @@ to1-1/  to1/
 / # cat to1/test1.txt 
 hello container05
 ```
+
+### code-5.7.2
+
+```
+-------------------------------terminal 01----------------------------
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name container01 busybox /bin/top
+2019/04/19 15:19:56 rootPath is empaty, set rootPath: /nicktming
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker ps
+ID                     NAME          PID         STATUS      COMMAND     CREATED
+15556583962876437411   container01   18416       running     /bin/top    2019-04-19 15:19:56
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker exec container01 /bin/sh
+2019/04/19 15:20:21 containerName:container01,command:/bin/sh
+/ # ls -l
+total 44
+drwxr-xr-x    2 root     root         12288 Feb 14 18:58 bin
+drwxr-xr-x    4 root     root          4096 Mar 17 16:05 dev
+drwxr-xr-x    3 root     root          4096 Mar 17 16:05 etc
+drwxr-xr-x    2 nobody   nogroup       4096 Feb 14 18:58 home
+dr-xr-xr-x  103 root     root             0 Apr 19 07:19 proc
+drwx------    2 root     root          4096 Apr 19 07:20 root
+drwxr-xr-x    2 root     root          4096 Mar 17 16:05 sys
+drwxrwxrwt    2 root     root          4096 Feb 14 18:58 tmp
+drwxr-xr-x    3 root     root          4096 Feb 14 18:58 usr
+drwxr-xr-x    4 root     root          4096 Feb 14 18:58 var
+
+-------------------------------terminal 02----------------------------
+root@nicktming:/nicktming# mkdir copy && echo "copy files" > copy/test01.txt
+// 从宿主机copy文件到容器中
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker cp /nicktming/copy/test01.txt container01:/
+2019/04/19 15:49:50 source:/nicktming/copy/test01.txt, destination:container01:/
+2019/04/19 15:49:50 containerUrl:container01:/, hostUrl:/nicktming/copy/test01.txt, conatinerName:container01, containerPath:/
+2019/04/19 15:49:50 containerPath:/nicktming/mnt/container01/, hostPath:/nicktming/copy/test01.txt
+2019/04/19 15:49:50 from_container_to_host:false
+2019/04/19 15:49:50 from /nicktming/copy/test01.txt to /nicktming/mnt/container01/
+root@nicktming:~/go/src/github.com/nicktming/mydocker#
+ 
+// 从容器中copy文件到宿主机
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker cp container01:/bin/top /root/go/src/github.com/nicktming/mydocker
+2019/04/19 15:51:00 source:container01:/bin/top, destination:/root/go/src/github.com/nicktming/mydocker
+2019/04/19 15:51:00 containerUrl:container01:/bin/top, hostUrl:/root/go/src/github.com/nicktming/mydocker, conatinerName:container01, containerPath:/bin/top
+2019/04/19 15:51:00 containerPath:/nicktming/mnt/container01/bin/top, hostPath:/root/go/src/github.com/nicktming/mydocker
+2019/04/19 15:51:00 from_container_to_host:true
+2019/04/19 15:51:00 from /nicktming/mnt/container01/bin/top to /root/go/src/github.com/nicktming/mydocker
+// 验证top命令是否copy到当前位置
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ls
+cgroups  command  main.go  memory  mydocker  nsenter  pictures  README.md  test  top  urfave-cli-examples
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+
+// 查看容器中是否有test1.txt文件
+-------------------------------terminal 01----------------------------
+/ # ls -l
+total 48
+drwxr-xr-x    2 root     root         12288 Feb 14 18:58 bin
+drwxr-xr-x    4 root     root          4096 Mar 17 16:05 dev
+drwxr-xr-x    3 root     root          4096 Mar 17 16:05 etc
+drwxr-xr-x    2 nobody   nogroup       4096 Feb 14 18:58 home
+dr-xr-xr-x  102 root     root             0 Apr 19 07:19 proc
+drwx------    2 root     root          4096 Apr 19 07:20 root
+drwxr-xr-x    2 root     root          4096 Mar 17 16:05 sys
+-rw-r--r--    1 root     root            11 Apr 19 07:49 test01.txt
+drwxrwxrwt    2 root     root          4096 Feb 14 18:58 tmp
+drwxr-xr-x    3 root     root          4096 Feb 14 18:58 usr
+drwxr-xr-x    4 root     root          4096 Feb 14 18:58 var
+/ # cat test01.txt 
+copy files
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+```
