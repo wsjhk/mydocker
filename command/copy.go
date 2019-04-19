@@ -1,7 +1,6 @@
 package command
 
 import (
-	"github.com/nicktming/mydocker-code-5.3/mydocker/command"
 	"log"
 	"os/exec"
 	"strings"
@@ -44,12 +43,12 @@ func Copy(source, destination string)  {
 }
 
 func FileCopy(src, dst string) {
-	exist, _ := command.PathExists(src)
+	exist, _ := PathExists(src)
 	if !exist {
 		log.Printf("src:%s not exists!\n", src)
 		return
 	}
-	exist, _ = command.PathExists(dst)
+	exist, _ = PathExists(dst)
 	if !exist {
 		log.Printf("dst:%s not exists!\n", src)
 		return
