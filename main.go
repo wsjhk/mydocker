@@ -22,6 +22,7 @@ func main()  {
 		command.ExecCommand,
 		command.StopCommand,
 		command.RemoveCommand,
+		command.CopyCommand,
 	}
 
 	err := app.Run(os.Args)

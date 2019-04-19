@@ -1,0 +1,37 @@
+
+
+@startuml
+title 实现容器宿主机相互复制操作
+
+skinparam sequence {
+
+    ActorBorderColor black
+    LifeLineBorderColor black
+    ActorBackgroundColor #87CEFA
+
+
+    ParticipantBorderColor black
+    ParticipantBackgroundColor #FFE4E1
+}
+
+
+actor user
+participant mydocker
+participant CopyCommand
+participant Copy
+
+
+user -> mydocker : 1. mydocker copy 容器路径 宿主机路径
+activate mydocker
+mydocker -> CopyCommand: 2. 解析参数
+activate CopyCommand
+CopyCommand -> Copy: 3. 容器名 镜像名
+activate Copy
+Copy --> CopyCommand: 4. 根据容器名找到挂载点\n 根据挂载点得到该文件在宿主机的绝对路径\n 在宿主机内实现复制功能
+deactivate Copy
+CopyCommand --> mydocker: 5. 返回
+deactivate CopyCommand
+mydocker --> user: 6. 返回
+deactivate mydocker
+
+@enduml
