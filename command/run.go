@@ -16,12 +16,6 @@ const (
 )
 
 func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string, envSlice []string)  {
-	//cmd := exec.Command(command)
-
-	log.Println(envSlice)
-	log.Println("---------------")
-	log.Println(os.Environ())
-
 
 	reader, writer, err := os.Pipe()
 	if err != nil {
@@ -38,7 +32,7 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	}
 
 	cmd := exec.Command(initCmd, "init")
-	log.Println(cmd.Env)
+	cmd.Env = append(os.Environ(), envSlice...)
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
