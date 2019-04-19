@@ -19,6 +19,8 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	//cmd := exec.Command(command)
 
 	log.Println(envSlice)
+	log.Println("---------------")
+	log.Println(os.Environ())
 
 	reader, writer, err := os.Pipe()
 	if err != nil {
