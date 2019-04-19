@@ -609,3 +609,31 @@ copy files
 / # exit
 root@nicktming:~/go/src/github.com/nicktming/mydocker# 
 ```
+
+### code-5.8
+```
+root@nicktming:/nicktming# pwd
+/nicktming
+root@nicktming:/nicktming# ls
+busybox.tar
+
+
+// -it 的形式没有问题
+root@nicktming:~/go/src/github.com/nicktming/mydocker# go build .
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -it -e name=nicktming busybox /bin/sh
+2019/04/19 22:44:30 rootPath is empaty, set rootPath: /nicktming
+2019/04/19 22:44:30 current path: /nicktming/mnt/15556850702382348471.
+/ # env | grep name
+name=nicktming
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -d -name container01 -e name=nicktming busybox /bin/top
+2019/04/19 23:03:28 rootPath is empaty, set rootPath: /nicktming
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker exec container01 /bin/sh
+2019/04/19 23:03:43 containerName:container01,command:/bin/sh
+/ # env | grep name
+name=nicktming
+/ # exit
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+```
