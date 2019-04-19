@@ -14,7 +14,7 @@ func Copy(source, destination string)  {
 		return
 	}
 
-	from_container_to_host := true
+	var from_container_to_host bool = true
 	containerUrl := source
 	hostUrl 	 := destination
 	if f2 {
@@ -31,13 +31,17 @@ func Copy(source, destination string)  {
 		log.Printf("GetContainerInfo error:%v\n", err)
 		return
 	}
-	containerMntPath := containerInfo.RootPath + "/mnt" + containerName + containerPath
+	containerMntPath := containerInfo.RootPath + "/mnt/" + containerName + containerPath
 	hostPath 	     := hostUrl
 	log.Printf("containerPath:%s, hostPath:%s\n", containerMntPath, hostPath)
 
+	log.Printf("from_container_to_host:%v\n", from_container_to_host)
+
 	if from_container_to_host {
+		log.Printf("from %s to %s\n", containerMntPath, hostPath)
 		FileCopy(containerMntPath, hostPath)
 	} else {
+		log.Printf("from %s to %s\n", hostPath, containerMntPath)
 		FileCopy(hostPath, containerMntPath)
 	}
 }
