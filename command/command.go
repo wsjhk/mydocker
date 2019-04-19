@@ -158,6 +158,7 @@ var CopyCommand = cli.Command{
 		source 		:= c.Args().Get(0)
 		destination := c.Args().Get(1)
 		log.Printf("source:%s, destination:%s\n", source, destination)
+		Copy(source, destination)
 		return nil
 	},
 }
