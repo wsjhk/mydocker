@@ -25,7 +25,7 @@ func Test002(t *testing.T)  {
 func Test003(t *testing.T)  {
 	hostip, ipnet, _ := net.ParseCIDR("192.168.0.1/24")
 	log.Printf("ip: %s ipnet ip:%s, mask:%s\n", hostip, ipnet.IP, ipnet.Mask)
-	_ := ipAllocator.Release(ipnet, &hostip)
+	ipAllocator.Release(ipnet, &hostip)
 }
 
 const ipamDefaultAllocatorPath = "/var/run/mydocker/network/ipam/subnet.json"
