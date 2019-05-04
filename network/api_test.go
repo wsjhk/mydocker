@@ -53,4 +53,8 @@ func TestNet002(t *testing.T) {
 	addr := &netlink.Addr{ipNet, "", 0, 0, nil}
 	err = netlink.AddrAdd(iface, addr)
 	log.Printf("AddrAdd error:%v\n", err)
+
+	if err := netlink.LinkSetUp(iface); err != nil {
+		fmt.Errorf("Error enabling interface for %s: %v", name, err)
+	}
 }
