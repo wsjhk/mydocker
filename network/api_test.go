@@ -30,7 +30,7 @@ func TestNet001(t *testing.T) {
 
 func TestNet002(t *testing.T) {
 	name := "testbridge"
-	rawIP := "192.168.0.0"
+	rawIP := "192.168.0.1/24"
 	retries := 2
 	var iface netlink.Link
 	var err error
