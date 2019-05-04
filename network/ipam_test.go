@@ -65,7 +65,7 @@ func (ipam *IPAM) load() error {
 
 func (ipam *IPAM) dump() error {
 	ipamConfigFileDir, _ := path.Split(ipam.SubnetAllocatorPath)
-	log.Printf("ipamConfigFileDir:%s\n", ipamConfigFileDir)
+	log.Printf("dump ipamConfigFileDir:%s\n", ipamConfigFileDir)
 	if _, err := os.Stat(ipamConfigFileDir); err != nil {
 		if os.IsNotExist(err) {
 			log.Printf("MkdirAll\n")
@@ -88,6 +88,8 @@ func (ipam *IPAM) dump() error {
 		return err
 	}
 
+	log.Printf("dump ipamConfigJson:%s\n", ipamConfigJson)
+
 	_, err = subnetConfigFile.Write(ipamConfigJson)
 	if err != nil {
 		return err
@@ -108,7 +110,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (ip net.IP, err error) {
 
 	_, subnet, _ = net.ParseCIDR(subnet.String())
 
-	log.Printf("Allocate subnet:%s\n", subnet)
+	log.Printf("Allocate subnet:%s, ipam.Subnets:%v\n", subnet, ipam.Subnets)
 
 	one, size := subnet.Mask.Size()
 
