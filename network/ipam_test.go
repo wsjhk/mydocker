@@ -3,14 +3,23 @@ package network
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"os"
 	"path"
+	"strings"
 	"testing"
 )
 
 func Test001(t *testing.T)  {
 	err := ipAllocator.dump()
 	log.Printf("error:%v\n", err)
+}
+
+func Test002(t *testing.T)  {
+	hostip, ipnet, _ := net.ParseCIDR("192.168.0.1/24")
+	log.Printf("ip: %s ipnet ip:%s, mask:%s\n", hostip, ipnet.IP, ipnet.Mask)
+	ip, _ := ipAllocator.Allocate(ipnet)
+	log.Printf("alloc ip : %v\n", ip)
 }
 
 const ipamDefaultAllocatorPath = "/var/run/mydocker/network/ipam/subnet.json"
@@ -84,5 +93,70 @@ func (ipam *IPAM) dump() error {
 		return err
 	}
 
+	return nil
+}
+
+func (ipam *IPAM) Allocate(subnet *net.IPNet) (ip net.IP, err error) {
+	// 存放网段中地址分配信息的数组
+	ipam.Subnets = &map[string]string{}
+
+	// 从文件中加载已经分配的网段信息
+	err = ipam.load()
+	if err != nil {
+		log.Printf("Error dump allocation info, %v", err)
+	}
+
+	_, subnet, _ = net.ParseCIDR(subnet.String())
+
+	log.Printf("Allocate subnet:%s\n", subnet)
+
+	one, size := subnet.Mask.Size()
+
+	log.Printf("Allocate one:%d, size:%d\n", one, size)
+
+	if _, exist := (*ipam.Subnets)[subnet.String()]; !exist {
+		(*ipam.Subnets)[subnet.String()] = strings.Repeat("0", 1 << uint8(size - one))
+	}
+
+	for c := range((*ipam.Subnets)[subnet.String()]) {
+		if (*ipam.Subnets)[subnet.String()][c] == '0' {
+			ipalloc := []byte((*ipam.Subnets)[subnet.String()])
+			ipalloc[c] = '1'
+			(*ipam.Subnets)[subnet.String()] = string(ipalloc)
+			ip = subnet.IP
+			for t := uint(4); t > 0; t-=1 {
+				[]byte(ip)[4-t] += uint8(c >> ((t - 1) * 8))
+			}
+			ip[3]+=1
+			break
+		}
+	}
+
+	ipam.dump()
+	return
+}
+
+func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr *net.IP) error {
+	ipam.Subnets = &map[string]string{}
+
+	_, subnet, _ = net.ParseCIDR(subnet.String())
+
+	err := ipam.load()
+	if err != nil {
+		log.Printf("Error dump allocation info, %v", err)
+	}
+
+	c := 0
+	releaseIP := ipaddr.To4()
+	releaseIP[3]-=1
+	for t := uint(4); t > 0; t-=1 {
+		c += int(releaseIP[t-1] - subnet.IP[t-1]) << ((4-t) * 8)
+	}
+
+	ipalloc := []byte((*ipam.Subnets)[subnet.String()])
+	ipalloc[c] = '0'
+	(*ipam.Subnets)[subnet.String()] = string(ipalloc)
+
+	ipam.dump()
 	return nil
 }
