@@ -53,6 +53,7 @@ func (ipam *IPAM) load() error {
 		return err
 	}
 
+	log.Printf("n:%d\n", n)
 	log.Println(subnetJson)
 
 	err = json.Unmarshal(subnetJson[:n], ipam.Subnets)
@@ -119,6 +120,8 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (ip net.IP, err error) {
 	if _, exist := (*ipam.Subnets)[subnet.String()]; !exist {
 		(*ipam.Subnets)[subnet.String()] = strings.Repeat("0", 1 << uint8(size - one))
 	}
+
+	log.Printf("Allocate one:%s\n", (*ipam.Subnets)[subnet.String()])
 
 	for c := range((*ipam.Subnets)[subnet.String()]) {
 		if (*ipam.Subnets)[subnet.String()][c] == '0' {
