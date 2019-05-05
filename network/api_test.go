@@ -128,8 +128,14 @@ func deleteDevice(name string)  {
 func TestNet006(t *testing.T) {
 	PeerName := "cif-12345"
 	containerIP := "192.168.0.8/24"
-	gwIP := "192.168.0.1"
-	ConfigEndpointIpAddressAndRoute(PeerName, containerIP, gwIP)
+
+	gwIP, ipnet, _ := net.ParseCIDR("192.168.0.1/24")
+	ipnet.IP = gwIP
+
+
+	if err := ConfigEndpointIpAddressAndRoute(PeerName, containerIP, gwIP); err != nil {
+		log.Printf("ConfigEndpointIpAddressAndRoute error:%v\n", err)
+	}
 }
 
 
@@ -165,7 +171,7 @@ func EnterContainerNetns(enLink *netlink.Link) func() {
 	}
 }
 
-func ConfigEndpointIpAddressAndRoute(PeerName, containerIP, gwIP string) error {
+func ConfigEndpointIpAddressAndRoute(PeerName, containerIP string, ipnet net.IPNet) error {
 	peerLink, err := netlink.LinkByName(PeerName)
 	if err != nil {
 		return fmt.Errorf("fail config endpoint: %v", err)
@@ -189,7 +195,7 @@ func ConfigEndpointIpAddressAndRoute(PeerName, containerIP, gwIP string) error {
 
 	defaultRoute := &netlink.Route{
 		LinkIndex: peerLink.Attrs().Index,
-		Gw: []byte(gwIP),
+		Gw: ipnet.IP,
 		Dst: cidr,
 	}
 
