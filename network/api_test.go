@@ -65,3 +65,19 @@ func TestNet002(t *testing.T) {
 		fmt.Errorf("Error enabling interface for %s: %v", name, err)
 	}
 }
+
+func TestNet003(t *testing.T)  {
+	bridgeName := "testbridge"
+	// 根据设备名找到该设备
+	l, err := netlink.LinkByName(bridgeName)
+	if err != nil {
+		fmt.Errorf("Getting link with name %s failed: %v", bridgeName, err)
+		return
+	}
+
+	// 删除设备
+	if err := netlink.LinkDel(l); err != nil {
+		fmt.Errorf("Failed to remove bridge interface %s delete: %v", bridgeName, err)
+		return
+	}
+}
