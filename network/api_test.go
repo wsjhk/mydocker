@@ -99,17 +99,24 @@ func TestNet003(t *testing.T) {
 }
 
 func TestNet005(t *testing.T) {
-	bridgeName := "testbridge"
+	deleteDevice("testbridge")
+	deleteDevice("12345")
+}
+
+func deleteDevice(name string)  {
 	// 根据设备名找到该设备
-	l, err := netlink.LinkByName(bridgeName)
+	l, err := netlink.LinkByName(name)
 	if err != nil {
-		fmt.Errorf("Getting link with name %s failed: %v", bridgeName, err)
+		fmt.Errorf("Getting link with name %s failed: %v", name, err)
 		return
 	}
 
-	// 删除设备 删除网桥就等于 ifconfig testbridge down && ip link delete testbridge type bridge
+	// 删除设备
+	// 删除网桥就等于 ifconfig testbridge down && ip link delete testbridge type bridge
+	// 删除veth就等于  ip link delete 12345 type veth
 	if err := netlink.LinkDel(l); err != nil {
-		fmt.Errorf("Failed to remove bridge interface %s delete: %v", bridgeName, err)
+		fmt.Errorf("Failed to remove bridge interface %s delete: %v", name, err)
 		return
 	}
+	log.Printf("Delete Device %s\n", name)
 }
