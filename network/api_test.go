@@ -133,7 +133,7 @@ func TestNet006(t *testing.T) {
 	ipnet.IP = gwIP
 
 
-	if err := ConfigEndpointIpAddressAndRoute(PeerName, containerIP, gwIP); err != nil {
+	if err := ConfigEndpointIpAddressAndRoute(PeerName, containerIP, ipnet); err != nil {
 		log.Printf("ConfigEndpointIpAddressAndRoute error:%v\n", err)
 	}
 }
@@ -171,7 +171,7 @@ func EnterContainerNetns(enLink *netlink.Link) func() {
 	}
 }
 
-func ConfigEndpointIpAddressAndRoute(PeerName, containerIP string, ipnet net.IPNet) error {
+func ConfigEndpointIpAddressAndRoute(PeerName, containerIP string, ipnet *net.IPNet) error {
 	peerLink, err := netlink.LinkByName(PeerName)
 	if err != nil {
 		return fmt.Errorf("fail config endpoint: %v", err)
