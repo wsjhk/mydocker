@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"testing"
@@ -102,7 +103,18 @@ func TestNet003(t *testing.T) {
 	}
 }
 
-func TestNet005(t *testing.T) {
+func TestNet005(t *testing.T)  {
+	subnet := "192.168.0.0/24"
+	iptablesCmd := fmt.Sprintf("-t nat -A POSTROUTING -s %s -o eth0 -j MASQUERADE", subnet)
+	cmd := exec.Command("iptables", strings.Split(iptablesCmd, " ")...)
+	//err := cmd.Run()
+	output, err := cmd.Output()
+	if err != nil {
+		log.Printf("iptables Output, %v", output)
+	}
+}
+
+func TestNet007(t *testing.T) {
 	deleteDevice("testbridge")
 	deleteDevice("12345")
 }
@@ -132,7 +144,6 @@ func TestNet006(t *testing.T) {
 	gwIP, ipnet, _ := net.ParseCIDR("192.168.0.1/24")
 	ipnet.IP = gwIP
 
-
 	if err := ConfigEndpointIpAddressAndRoute(PeerName, containerIP, ipnet); err != nil {
 		log.Printf("ConfigEndpointIpAddressAndRoute error:%v\n", err)
 	}
@@ -159,18 +170,36 @@ func EnterContainerNetns(enLink *netlink.Link) func() {
 		logrus.Errorf("error get current netns, %v", err)
 	}
 
+	printCurrentNamespace()
+	log.Printf("before set to new namespace \n")
+
 	// 设置当前进程到新的网络namespace，并在函数执行完成之后再恢复到之前的namespace
 	if err = netns.Set(netns.NsHandle(nsFD)); err != nil {
 		logrus.Errorf("error set netns, %v", err)
 	}
+
+	printCurrentNamespace()
+	log.Printf("after set to new namespace\n")
+
 	return func () {
 		netns.Set(origns)
+
+		printCurrentNamespace()
+		log.Printf("before close\n")
+
 		origns.Close()
 		runtime.UnlockOSThread()
 		f.Close()
 	}
 }
 
+func printCurrentNamespace()  {
+	currentNamespace, _ := netns.Get()
+	log.Printf("currentNamespace:%v\n", currentNamespace)
+}
+
+
+// 类似于 ip netns exec network_namespace sh 然后在该network_namespace namespace中配置网络
 func ConfigEndpointIpAddressAndRoute(PeerName, containerIP string, ipnet *net.IPNet) error {
 	peerLink, err := netlink.LinkByName(PeerName)
 	if err != nil {
@@ -179,15 +208,18 @@ func ConfigEndpointIpAddressAndRoute(PeerName, containerIP string, ipnet *net.IP
 
 	defer EnterContainerNetns(&peerLink)()
 
-	if err = setInterfaceIP(PeerName, containerIP); err != nil {
+	printCurrentNamespace()
+	log.Printf("config network namespace start.\n")
+
+	if err = SetInterfaceIP(PeerName, containerIP); err != nil {
 		return fmt.Errorf("set %s up error:%v", PeerName, err)
 	}
 
-	if err = setInterfaceUP(PeerName); err != nil {
+	if err = SetInterfaceUP(PeerName); err != nil {
 		return err
 	}
 
-	if err = setInterfaceUP("lo"); err != nil {
+	if err = SetInterfaceUP("lo"); err != nil {
 		return err
 	}
 
@@ -203,10 +235,14 @@ func ConfigEndpointIpAddressAndRoute(PeerName, containerIP string, ipnet *net.IP
 		return err
 	}
 
+	printCurrentNamespace()
+	log.Printf("config network namespace end.\n")
+
 	return nil
 }
 
-func setInterfaceUP(interfaceName string) error {
+// 前面已经铺垫过
+func SetInterfaceUP(interfaceName string) error {
 	iface, err := netlink.LinkByName(interfaceName)
 	if err != nil {
 		return fmt.Errorf("Error retrieving a link named [ %s ]: %v", iface.Attrs().Name, err)
@@ -218,8 +254,9 @@ func setInterfaceUP(interfaceName string) error {
 	return nil
 }
 
+// 前面已经铺垫过
 // Set the IP addr of a netlink interface
-func setInterfaceIP(name string, rawIP string) error {
+func SetInterfaceIP(name string, rawIP string) error {
 	retries := 2
 	var iface netlink.Link
 	var err error
