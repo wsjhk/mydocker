@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-
 // 等于 ip link add name testbridge type bridge
 func TestNet001(t *testing.T) {
 	bridgeName := "testbridge"
@@ -66,7 +65,40 @@ func TestNet002(t *testing.T) {
 	}
 }
 
-func TestNet003(t *testing.T)  {
+func TestNet003(t *testing.T) {
+	bridgeName := "testbridge"
+	// 根据设备名找到设备testbridge
+	br, err := netlink.LinkByName(bridgeName)
+	if err != nil {
+		log.Printf("LinkByName err:%v\n", err)
+		return
+	}
+
+	la := netlink.NewLinkAttrs()
+	la.Name = "12345"
+
+	log.Printf("br.attrs().index:%d\n", br.Attrs().Index)
+	// 等于 ip link set dev 12345 master testbridge
+	la.MasterIndex = br.Attrs().Index
+
+	myVeth := netlink.Veth{
+		LinkAttrs: la,
+		PeerName:  "cif-" + la.Name,
+	}
+	// 等于 ip link add 12345 type veth peer name cif-12345
+	if err = netlink.LinkAdd(&myVeth); err != nil {
+		fmt.Errorf("Error Add Endpoint Device: %v", err)
+		return
+	}
+
+	// 等于 ip link set 12345 up
+	if err = netlink.LinkSetUp(&myVeth); err != nil {
+		fmt.Errorf("Error Add Endpoint Device: %v", err)
+		return
+	}
+}
+
+func TestNet005(t *testing.T) {
 	bridgeName := "testbridge"
 	// 根据设备名找到该设备
 	l, err := netlink.LinkByName(bridgeName)
@@ -75,7 +107,7 @@ func TestNet003(t *testing.T)  {
 		return
 	}
 
-	// 删除设备
+	// 删除设备 删除网桥就等于 ifconfig testbridge down && ip link delete testbridge type bridge
 	if err := netlink.LinkDel(l); err != nil {
 		fmt.Errorf("Failed to remove bridge interface %s delete: %v", bridgeName, err)
 		return
