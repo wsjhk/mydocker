@@ -43,8 +43,8 @@ func (ipam *IPAM) load() error {
 		return err
 	}
 
-	log.Printf("n:%d\n", n)
-	log.Println(subnetJson)
+	//log.Printf("n:%d\n", n)
+	//log.Println(subnetJson)
 
 	// 将subnetJson中内容加载到ipam.Subnets中
 	err = json.Unmarshal(subnetJson[:n], ipam.Subnets)
@@ -103,11 +103,11 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (ip net.IP, err error) {
 	// 得到网络号
 	_, subnet, _ = net.ParseCIDR(subnet.String())
 
-	log.Printf("Allocate subnet:%s, ipam.Subnets:%v\n", subnet, ipam.Subnets)
+	//log.Printf("Allocate subnet:%s, ipam.Subnets:%v\n", subnet, ipam.Subnets)
 	// one表示前缀的个数 size表示ip地址的个数 ipv4==>size=32
 	one, size := subnet.Mask.Size()
 
-	log.Printf("Allocate one:%d, size:%d\n", one, size)
+	//log.Printf("Allocate one:%d, size:%d\n", one, size)
 
 	// 如果该网络还不在ipam.Subnets中, 则初始化一个
 	// 那怎么知道该网络有多少个ip地址呢 size-one就表示主机号占的位数 2的(size-one)方就有多少个主机ip
@@ -115,7 +115,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (ip net.IP, err error) {
 		(*ipam.Subnets)[subnet.String()] = strings.Repeat("0", 1 << uint8(size - one))
 	}
 
-	log.Printf("Allocate one:%s\n", (*ipam.Subnets)[subnet.String()])
+	//log.Printf("Allocate one:%s\n", (*ipam.Subnets)[subnet.String()])
 
 	for c := range((*ipam.Subnets)[subnet.String()]) {
 		// 如果第c个ip没有被分配 则分配
