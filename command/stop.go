@@ -8,6 +8,8 @@ import (
 )
 
 func Stop(containerName string)  {
+	log.Printf("===>containerName:%s\n", containerName)
+
 	containerInfo, err := GetContainerInfo(containerName)
 	if err != nil {
 		fmt.Errorf("GetContainerInfo error:%v\n", err)
@@ -22,10 +24,12 @@ func Stop(containerName string)  {
 		fmt.Errorf("strconv.Atoi(%s) error : %v\n", containerInfo.Pid, err)
 		return
 	}
+	log.Printf("===>before kill\n")
 	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
 		fmt.Errorf("Stop container %s error %v.\n", containerName, err)
 		return
 	}
+	log.Printf("===>after kill\n")
 	containerInfo.Status = STOP
 	containerInfo.Pid = ""
 	UpdateContainerInfo(containerInfo)
