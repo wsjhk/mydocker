@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"syscall"
@@ -12,7 +11,7 @@ func Stop(containerName string)  {
 
 	containerInfo, err := GetContainerInfo(containerName)
 	if err != nil {
-		fmt.Errorf("GetContainerInfo error:%v\n", err)
+		log.Printf("GetContainerInfo error:%v\n", err)
 		return
 	}
 	if containerInfo.Pid == "" {
@@ -21,12 +20,12 @@ func Stop(containerName string)  {
 	}
 	pid, err := strconv.Atoi(containerInfo.Pid)
 	if err != nil {
-		fmt.Errorf("strconv.Atoi(%s) error : %v\n", containerInfo.Pid, err)
+		log.Printf("strconv.Atoi(%s) error : %v\n", containerInfo.Pid, err)
 		return
 	}
 	log.Printf("===>before kill\n")
 	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
-		fmt.Errorf("Stop container %s error %v.\n", containerName, err)
+		log.Printf("Stop container %s error %v.\n", containerName, err)
 		return
 	}
 	log.Printf("===>after kill\n")
