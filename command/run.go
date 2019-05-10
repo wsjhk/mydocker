@@ -3,6 +3,8 @@ package command
 import (
 	"fmt"
 	"github.com/nicktming/mydocker/cgroups"
+	"github.com/nicktming/mydocker/network"
+	"github.com/xianlubird/mydocker/container"
 	"log"
 	"os"
 	"os/exec"
@@ -15,7 +17,7 @@ const (
 	DEFAULTPATH = "/nicktming"
 )
 
-func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string, envSlice []string)  {
+func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, volumes []string, containerName, imageName string, envSlice []string, nw string, portMapping []string)  {
 
 	reader, writer, err := os.Pipe()
 	if err != nil {
@@ -80,6 +82,21 @@ func Run(command string, tty bool, cg *cgroups.CroupManger, rootPath string, vol
 	if err := cmd.Start(); err != nil {
 		log.Printf("Run Start err: %v.\n", err)
 		log.Fatal(err)
+	}
+
+	if nw != "" {
+		// config container network
+		network.Init()
+		containerInfo := &container.ContainerInfo{
+			Id:          id,
+			Pid:         strconv.Itoa(cmd.Process.Pid),
+			Name:        containerName,
+			PortMapping: portMapping,
+		}
+		if err := network.Connect(nw, containerInfo); err != nil {
+			log.Printf("Error Connect Network %v", err)
+			return
+		}
 	}
 
 	cg.Set()
