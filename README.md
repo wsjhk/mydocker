@@ -637,3 +637,176 @@ name=nicktming
 / # exit
 root@nicktming:~/go/src/github.com/nicktming/mydocker# 
 ```
+
+### code-6.2
+```
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ip link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:58:9a:c3 brd ff:ff:ff:ff:ff:ff
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN mode DEFAULT group default 
+    link/ether 56:84:7a:fe:97:99 brd ff:ff:ff:ff:ff:ff
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+root@nicktming:~/go/src/github.com/nicktming/mydocker# iptables -t nat -vnL POSTROUTING --line
+Chain POSTROUTING (policy ACCEPT 2 packets, 120 bytes)
+num   pkts bytes target     prot opt in     out     source               destination         
+1       14   998 MASQUERADE  all  --  *      !docker0  172.17.0.0/16        0.0.0.0/0           
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker network create --driver bridge --subnet 192.168.10.1/24 testbridge01
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker network list
+NAME           IpRange           Driver
+testbridge01   192.168.10.1/24   bridge
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ifconfig testbridge01
+testbridge01 Link encap:Ethernet  HWaddr 02:f4:c8:97:df:39  
+          inet addr:192.168.10.1  Bcast:0.0.0.0  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+root@nicktming:~/go/src/github.com/nicktming/mydocker# iptables -t nat -vnL POSTROUTING --line
+Chain POSTROUTING (policy ACCEPT 2 packets, 135 bytes)
+num   pkts bytes target     prot opt in     out     source               destination         
+1       14   998 MASQUERADE  all  --  *      !docker0  172.17.0.0/16        0.0.0.0/0           
+2        0     0 MASQUERADE  all  --  *      !testbridge01  192.168.10.0/24      0.0.0.0/0           
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker network remove testbridge01
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker network list
+NAME        IpRange     Driver
+```
+> network implementation
+```
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -it -p 80:80 -net testbridge01 busybox /bin/sh
+2019/05/09 22:47:17 rootPath is empaty, set rootPath: /nicktming
+2019/05/09 22:47:17 current path: /nicktming/mnt/15574132372127349531.
+/ # ifconfig
+cif-15574 Link encap:Ethernet  HWaddr 0A:A9:1E:91:0B:BD  
+          inet addr:192.168.10.3  Bcast:0.0.0.0  Mask:255.255.255.0
+          inet6 addr: fe80::8a9:1eff:fe91:bbd/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:508 (508.0 B)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+/ # route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         192.168.10.1    0.0.0.0         UG    0      0        0 cif-15574
+192.168.10.0    0.0.0.0         255.255.255.0   U     0      0        0 cif-15574
+/ # ping -c 1 192.168.10.3
+PING 192.168.10.3 (192.168.10.3): 56 data bytes
+64 bytes from 192.168.10.3: seq=0 ttl=64 time=0.042 ms
+
+--- 192.168.10.3 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.042/0.042/0.042 ms
+/ # ping -c 1 127.0.0.1
+PING 127.0.0.1 (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: seq=0 ttl=64 time=0.039 ms
+
+--- 127.0.0.1 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.039/0.039/0.039 ms
+/ # ping -c 1 192.168.10.1
+PING 192.168.10.1 (192.168.10.1): 56 data bytes
+64 bytes from 192.168.10.1: seq=0 ttl=64 time=0.067 ms
+
+--- 192.168.10.1 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.067/0.067/0.067 ms
+/ # ping -c 1 172.19.16.7
+PING 172.19.16.7 (172.19.16.7): 56 data bytes
+64 bytes from 172.19.16.7: seq=0 ttl=64 time=0.055 ms
+
+--- 172.19.16.7 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.055/0.055/0.055 ms
+/ # echo "nameserver 183.60.83.19" >> /etc/resolv.conf 
+/ # echo "nameserver 183.60.82.98" >> /etc/resolv.conf 
+/ # 
+/ # cat /etc/resolv.conf 
+nameserver 183.60.83.19
+nameserver 183.60.82.98
+/ # ping -c 1 www.baidu.com
+PING www.baidu.com (119.63.197.139): 56 data bytes
+64 bytes from 119.63.197.139: seq=0 ttl=51 time=53.213 ms
+
+--- www.baidu.com ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 53.213/53.213/53.213 ms
+/ # nc -lp 80
+
+```
+> 在另外一台机器访问该容器的服务
+```
+telnet 150.109.72.88 80
+Trying 150.109.72.88...
+Connected to 150.109.72.88.
+Escape character is '^]'.
+hello world!
+```
+> 容器中可以看到
+```
+/ # nc -lp 80
+hello world!
+```
+> 容器之间访问
+```
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ./mydocker run -it -net testbridge01 busybox /bin/sh
+2019/05/09 23:06:18 rootPath is empaty, set rootPath: /nicktming
+2019/05/09 23:06:18 current path: /nicktming/mnt/7484077863.
+/ # ifconfig
+cif-74840 Link encap:Ethernet  HWaddr 0E:05:F7:07:54:73  
+          inet addr:192.168.10.7  Bcast:0.0.0.0  Mask:255.255.255.0
+          inet6 addr: fe80::c05:f7ff:fe07:5473/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:418 (418.0 B)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+/ # ping -c 1 192.168.10.3
+PING 192.168.10.3 (192.168.10.3): 56 data bytes
+64 bytes from 192.168.10.3: seq=0 ttl=64 time=0.080 ms
+
+--- 192.168.10.3 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.080/0.080/0.080 ms
+```
+> 宿主机访问容器
+```
+root@nicktming:~/go/src/github.com/nicktming/mydocker# ping -c 1 192.168.10.3
+PING 192.168.10.3 (192.168.10.3) 56(84) bytes of data.
+64 bytes from 192.168.10.3: icmp_seq=1 ttl=64 time=0.051 ms
+
+--- 192.168.10.3 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.051/0.051/0.051/0.000 ms
+```
+> Iptables查看
+```
+root@nicktming:~/go/src/github.com/nicktming/mydocker# iptables -t nat -vnL PREROUTING
+Chain PREROUTING (policy ACCEPT 425 packets, 18063 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+1614K   62M DOCKER     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ADDRTYPE match dst-type LOCAL
+    2   104 DNAT       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 to:192.168.10.3:80
+root@nicktming:~/go/src/github.com/nicktming/mydocker# 
+```
